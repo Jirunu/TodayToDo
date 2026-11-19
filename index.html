@@ -4,160 +4,701 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TodayToDo</title>
+<meta name="description" content="매일 기술 뉴스에서 CS 개념을 뽑고 백준 문제로 연결하는 1일 1CS · 1일 1솔 기록">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%2316a34a'/%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root {
-    --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --card: #f6f8fa;
-    --accent: #1a7f37; --accent-soft: #dafbe1; --link: #0969da;
+    --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f1f3f5; --line: #e4e7eb; --line-strong: #d0d5db;
+    --text: #15181d; --text-2: #4b5360; --muted: #7b8491;
+    --accent: #16a34a; --accent-strong: #15803d; --accent-soft: #e7f7ec; --on-accent: #ffffff;
+    --hn: #e8590c; --hn-soft: #fff1e8; --gn: #4c6ef5; --gn-soft: #edf1ff;
+    --warn: #b45309; --warn-soft: #fef3e2;
+    --heat-0: #ebedf0; --heat-1: #9be9a8; --heat-2: #30a14e;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 1px 3px rgba(16, 24, 40, .06);
+    --radius: 14px;
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #30363d; --card: #151b23;
-      --accent: #3fb950; --accent-soft: #12261e; --link: #4493f8;
+    :root:not([data-theme="light"]) {
+      --bg: #0c0e12; --surface: #14171c; --surface-2: #1b1f26; --line: #252a32; --line-strong: #323844;
+      --text: #e8eaee; --text-2: #b5bcc7; --muted: #8a93a1;
+      --accent: #22c55e; --accent-strong: #4ade80; --accent-soft: rgba(34, 197, 94, .12); --on-accent: #06210f;
+      --hn: #ff8a3d; --hn-soft: rgba(255, 138, 61, .12); --gn: #7c93ff; --gn-soft: rgba(124, 147, 255, .13);
+      --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, .1);
+      --heat-0: #1f242c; --heat-1: #0e4429; --heat-2: #26a641;
+      --shadow: none; color-scheme: dark;
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #0c0e12; --surface: #14171c; --surface-2: #1b1f26; --line: #252a32; --line-strong: #323844;
+    --text: #e8eaee; --text-2: #b5bcc7; --muted: #8a93a1;
+    --accent: #22c55e; --accent-strong: #4ade80; --accent-soft: rgba(34, 197, 94, .12); --on-accent: #06210f;
+    --hn: #ff8a3d; --hn-soft: rgba(255, 138, 61, .12); --gn: #7c93ff; --gn-soft: rgba(124, 147, 255, .13);
+    --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, .1);
+    --heat-0: #1f242c; --heat-1: #0e4429; --heat-2: #26a641;
+    --shadow: none; color-scheme: dark;
+  }
+
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--fg);
-         font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif; }
-  header { border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 1; }
-  .bar { max-width: 860px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-  .logo { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: auto; }
-  .logo span { color: var(--accent); }
-  nav a { color: var(--muted); text-decoration: none; font-size: 15px; padding: 4px 2px; }
-  nav a.on, nav a:hover { color: var(--fg); }
-  nav { display: flex; gap: 14px; flex-wrap: wrap; }
-  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
-  a { color: var(--link); }
-  h1 { font-size: 1.6em; margin: 0 0 .6em; } h2 { font-size: 1.3em; margin-top: 2em; padding-bottom: .3em; border-bottom: 1px solid var(--line); }
-  h3 { font-size: 1.1em; margin-top: 1.6em; }
-  blockquote { margin: 1em 0; padding: .4em 1em; border-left: 4px solid var(--accent); background: var(--card); color: var(--fg); border-radius: 0 6px 6px 0; }
-  blockquote p { margin: .3em 0; }
-  code { background: var(--card); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
-  pre { background: var(--card); padding: 12px; border-radius: 6px; overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; }
-  th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; white-space: nowrap; }
-  details { background: var(--card); border-radius: 6px; padding: 6px 10px; margin: 4px 0 12px; }
-  summary { cursor: pointer; color: var(--accent); font-weight: 600; }
-  img { max-width: 100%; }
-  .heat { background: #fff; border-radius: 8px; padding: 10px; display: inline-block; max-width: 100%; overflow-x: auto; }
-  .note { margin-top: 40px; border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 4px 20px 12px; }
-  .list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-  .list a { display: block; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; text-decoration: none; color: var(--fg); }
-  .list a:hover { border-color: var(--accent); }
-  .list small { color: var(--muted); display: block; }
-  .empty { color: var(--muted); padding: 40px 0; text-align: center; }
-  .mermaid { background: #fff; border-radius: 8px; padding: 12px; overflow-x: auto; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15.5px/1.65 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  /* ---------- 헤더 ---------- */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar { max-width: 1040px; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; gap: 20px; }
+  .logo { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; text-decoration: none; letter-spacing: -0.03em; }
+  .logo-mark { width: 24px; height: 24px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; }
+  .logo-mark svg { width: 15px; height: 15px; }
+  .logo b { color: var(--accent); font-weight: 800; }
+  nav { display: flex; gap: 4px; margin-left: auto; }
+  nav a {
+    text-decoration: none; color: var(--text-2); font-size: 14.5px; font-weight: 500;
+    padding: 7px 12px; border-radius: 9px; transition: background .15s, color .15s;
+  }
+  nav a:hover { background: var(--surface-2); color: var(--text); }
+  nav a.on { color: var(--text); background: var(--surface-2); font-weight: 650; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+    display: grid; place-items: center; cursor: pointer; flex: none;
+  }
+  .icon-btn:hover { border-color: var(--line-strong); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 96px; }
+
+  /* ---------- 공통 ---------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .pad { padding: 22px 24px; }
+  .section { margin-top: 44px; }
+  .section-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 14px; }
+  .section-head h2 { font-size: 19px; font-weight: 750; margin: 0; letter-spacing: -0.03em; }
+  .section-head .num {
+    width: 24px; height: 24px; border-radius: 7px; display: inline-grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent-strong); font-size: 13px; font-weight: 800; align-self: center;
+  }
+  .section-head .sub { color: var(--muted); font-size: 13.5px; margin-left: auto; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; line-height: 1;
+    padding: 6px 9px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap;
+  }
+  .chip.green { background: var(--accent-soft); color: var(--accent-strong); }
+  .chip.hn { background: var(--hn-soft); color: var(--hn); }
+  .chip.gn { background: var(--gn-soft); color: var(--gn); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px; padding: 10px 16px; border-radius: 10px; font-weight: 650; font-size: 14.5px;
+    text-decoration: none; border: 1px solid var(--line); background: var(--surface); cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--line-strong); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn svg { width: 15px; height: 15px; }
+  .muted { color: var(--muted); }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+
+  /* ---------- 오늘: 히어로 ---------- */
+  .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+  .eyebrow { font-size: 13.5px; font-weight: 650; color: var(--accent-strong); margin: 0 0 6px; }
+  .hero h1 { font-size: clamp(26px, 4.4vw, 34px); line-height: 1.25; margin: 0; font-weight: 800; letter-spacing: -0.04em; }
+  .day-nav { display: flex; gap: 8px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat { padding: 16px 18px; }
+  .stat .label { font-size: 13px; color: var(--muted); font-weight: 550; display: flex; align-items: center; gap: 6px; }
+  .stat .value { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .stat .value small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+
+  /* ---------- 잔디 ---------- */
+  .heat-card { margin-top: 12px; padding: 18px 22px 16px; }
+  .heat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+  .heat-top b { font-size: 14.5px; }
+  .legend { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .heat-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .heat { display: grid; grid-auto-flow: column; grid-template-rows: 16px repeat(7, 12px); grid-auto-columns: 12px; gap: 3px; width: max-content; }
+  .heat .cell { border-radius: 3px; background: var(--heat-0); }
+  .heat .cell.l1 { background: var(--heat-1); }
+  .heat .cell.l2 { background: var(--heat-2); }
+  .heat .cell.today { outline: 1.5px solid var(--text-2); outline-offset: 1px; }
+  .heat .month { font-size: 11px; color: var(--muted); line-height: 16px; white-space: nowrap; overflow: visible; }
+  .heat .cell.future { background: transparent; }
+
+  /* ---------- 개념 카드 ---------- */
+  .concept { padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .concept-top { display: flex; gap: 6px; flex-wrap: wrap; }
+  .concept h3 { margin: 0; font-size: 20px; font-weight: 780; letter-spacing: -0.035em; line-height: 1.35; }
+  .concept ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .concept li { position: relative; padding-left: 16px; color: var(--text-2); }
+  .concept li::before { content: ""; position: absolute; left: 2px; top: .72em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .ask { background: var(--surface-2); border-radius: 11px; padding: 12px 14px; font-size: 14.5px; }
+  .ask b { display: block; font-size: 12.5px; color: var(--muted); font-weight: 650; margin-bottom: 2px; }
+  .related { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--text-2); text-decoration: none; margin-top: auto; }
+  .related:hover span { text-decoration: underline; }
+
+  /* ---------- 퀴즈 ---------- */
+  .quiz { display: grid; gap: 10px; margin-top: 16px; }
+  .quiz details { padding: 0; overflow: hidden; }
+  .quiz summary {
+    list-style: none; cursor: pointer; padding: 16px 20px; display: flex; gap: 14px; align-items: flex-start; font-weight: 600;
+  }
+  .quiz summary::-webkit-details-marker { display: none; }
+  .quiz .q-no { flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--surface-2); display: grid; place-items: center; font-size: 13px; font-weight: 800; color: var(--text-2); }
+  .quiz .q-text { flex: 1; }
+  .quiz .q-hint { flex: none; font-size: 12.5px; color: var(--muted); font-weight: 600; padding-top: 3px; }
+  .quiz details[open] .q-hint { color: var(--accent-strong); }
+  .quiz details[open] .q-no { background: var(--accent); color: var(--on-accent); }
+  .quiz .answer { padding: 0 20px 16px 60px; color: var(--text-2); }
+  .quiz .answer b { color: var(--accent-strong); margin-right: 6px; }
+
+  .reviews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+  .reviews a { text-decoration: none; }
+  .reviews a:hover .chip { background: var(--line); }
+
+  /* ---------- 문제 ---------- */
+  .problem { padding: 24px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .problem .boj { flex: none; width: 76px; height: 76px; border-radius: 16px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; text-align: center; font-weight: 800; line-height: 1.1; }
+  .problem .boj small { display: block; font-size: 11px; font-weight: 700; opacity: .8; }
+  .problem .boj span { font-size: 17px; letter-spacing: -0.03em; }
+  .problem .info { flex: 1; min-width: 200px; }
+  .problem h3 { margin: 0 0 8px; font-size: 20px; font-weight: 780; letter-spacing: -0.035em; }
+  .problem .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .problem .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pending { margin-top: 12px; padding: 16px 20px; }
+  .pending-head { font-weight: 650; font-size: 14px; display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .pending ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .pending li a { display: flex; gap: 12px; padding: 7px 8px; border-radius: 8px; text-decoration: none; font-size: 14.5px; }
+  .pending li a:hover { background: var(--surface-2); }
+  .pending .d { color: var(--muted); font-variant-numeric: tabular-nums; width: 46px; flex: none; }
+
+  /* ---------- 뉴스 ---------- */
+  .news { padding: 6px; }
+  .news a { display: flex; gap: 14px; padding: 14px 16px; border-radius: 10px; text-decoration: none; align-items: flex-start; }
+  .news a:hover { background: var(--surface-2); }
+  .news a + a { border-top: 1px solid var(--line); border-radius: 0; }
+  .news a:hover + a { border-top-color: transparent; }
+  .news .n-body { flex: 1; min-width: 0; }
+  .news .n-title { font-weight: 650; line-height: 1.45; }
+  .news .n-line { color: var(--text-2); font-size: 14px; margin-top: 3px; }
+  .news .chip { margin-top: 2px; flex: none; min-width: 74px; justify-content: center; }
+
+  /* ---------- 노트 ---------- */
+  .note { padding: 22px 26px; }
+  .note h1, .note h2, .note h3 { letter-spacing: -0.03em; }
+  .note h1 { font-size: 22px; margin: .2em 0 .6em; }
+  .note h2 { font-size: 18px; margin: 1.4em 0 .5em; }
+  .note p, .note li { color: var(--text-2); }
+  .note code { background: var(--surface-2); padding: .12em .4em; border-radius: 5px; font-size: .9em; }
+  .note pre { background: var(--surface-2); padding: 14px; border-radius: 10px; overflow-x: auto; }
+  .note pre code { background: none; padding: 0; }
+  .note blockquote { margin: 1em 0; padding: 4px 16px; border-left: 3px solid var(--accent); color: var(--text-2); }
+  .note img { max-width: 100%; }
+  .note table { border-collapse: collapse; display: block; overflow-x: auto; }
+  .note th, .note td { border: 1px solid var(--line); padding: 6px 10px; }
+  .empty-note { padding: 28px; text-align: center; border-style: dashed; box-shadow: none; }
+  .empty-note p { margin: 0 0 14px; color: var(--text-2); }
+  .empty-note .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- 목록 페이지 ---------- */
+  .page-head { margin-bottom: 22px; }
+  .page-head h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; margin: 0 0 4px; }
+  .page-head p { margin: 0; color: var(--muted); }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  .search {
+    flex: 1; min-width: 220px; height: 42px; padding: 0 14px 0 40px; border-radius: 11px; border: 1px solid var(--line);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237b8491' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 14px center;
+    color: var(--text); font: inherit;
+  }
+  .search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filters button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 13px; font-size: 13.5px; font-weight: 600; cursor: pointer; color: var(--text-2); }
+  .filters button.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .month-label { font-size: 13.5px; font-weight: 700; color: var(--muted); margin: 26px 0 10px; }
+  .rows { overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 16px; padding: 14px 18px; text-decoration: none; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row:hover { background: var(--surface-2); }
+  .row .date { width: 64px; flex: none; }
+  .row .date b { display: block; font-size: 17px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .row .date span { font-size: 12.5px; color: var(--muted); }
+  .row .names { flex: 1; min-width: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+  .row .flags { display: flex; gap: 6px; flex: none; }
+  .flag { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); color: var(--muted); }
+  .flag.on { background: var(--accent-soft); color: var(--accent-strong); }
+  .flag svg { width: 15px; height: 15px; }
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .ctile { padding: 14px 16px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; }
+  .ctile:hover { border-color: var(--line-strong); }
+  .ctile b { font-size: 15.5px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.4; }
+  .ctile .foot { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--muted); margin-top: auto; }
+  .graph-box { margin-top: 28px; }
+  .graph-box summary { cursor: pointer; font-weight: 700; padding: 16px 20px; list-style: none; display: flex; justify-content: space-between; }
+  .graph-box summary::-webkit-details-marker { display: none; }
+  .graph-box .mermaid { padding: 0 16px 16px; overflow-x: auto; }
+  .week-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .week-list a { padding: 18px; text-decoration: none; }
+  .week-list a:hover { border-color: var(--line-strong); }
+  .week-list b { font-size: 18px; font-weight: 800; display: block; }
+
+  /* ---------- 상태 ---------- */
+  .onboard { padding: 34px; max-width: 640px; margin: 20px auto; }
+  .onboard h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: -0.04em; }
+  .onboard ol { padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; margin: 22px 0 0; }
+  .onboard li { counter-increment: s; display: flex; gap: 14px; color: var(--text-2); }
+  .onboard li::before { content: counter(s); flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+  .onboard li a { color: var(--accent-strong); font-weight: 650; }
+  .onboard code { background: var(--surface-2); padding: .12em .4em; border-radius: 5px; font-size: .9em; }
+  .notice { padding: 40px 20px; text-align: center; color: var(--muted); }
+  .skeleton { border-radius: var(--radius); background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%; animation: sk 1.2s infinite; }
+  @keyframes sk { to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+  footer { max-width: 1040px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
+  footer a { color: var(--text-2); }
+
+  @media (max-width: 720px) {
+    .bar { padding: 0 16px; gap: 10px; }
+    .logo span.word { display: none; }
+    nav a { padding: 7px 9px; font-size: 14px; }
+    main { padding: 24px 16px 72px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .pad, .concept, .note { padding: 18px; }
+    .problem { padding: 18px; }
+    .problem .actions { width: 100%; }
+    .problem .actions .btn { flex: 1; justify-content: center; }
+    .row { gap: 12px; padding: 12px 14px; }
+    .row .flags { display: none; }
+    .quiz .answer { padding-left: 20px; }
+    .news a { flex-direction: column; gap: 6px; }
+    .news .chip { min-width: 0; }
+    footer { padding: 0 16px 32px; }
+  }
+  @media (max-width: 400px) {
+    nav a { padding: 6px 7px; font-size: 13.5px; }
+    .icon-btn { width: 32px; height: 32px; }
+  }
 </style>
 </head>
 <body>
 <header>
   <div class="bar">
-    <a class="logo" href="#/">Today<span>ToDo</span></a>
-    <nav>
+    <a class="logo" href="#/" aria-label="TodayToDo 홈">
+      <span class="logo-mark"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3L12.5 5"/></svg></span>
+      <span class="word">Today<b>ToDo</b></span>
+    </a>
+    <nav aria-label="주 메뉴">
       <a href="#/" data-nav="today">오늘</a>
-      <a href="#/days" data-nav="days">지난 기록</a>
-      <a href="#/concepts" data-nav="concepts">개념 아카이브</a>
-      <a href="#/weekly" data-nav="weekly">주간 리포트</a>
+      <a href="#/days" data-nav="days">기록</a>
+      <a href="#/concepts" data-nav="concepts">개념</a>
+      <a href="#/weekly" data-nav="weekly">주간</a>
     </nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="다크 모드 전환"></button>
   </div>
 </header>
-<main id="app"><p class="empty">불러오는 중…</p></main>
+<main id="app" aria-live="polite"></main>
+<footer id="foot"></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
-const app = document.getElementById("app");
-mermaid.initialize({ startOnLoad: false, theme: "default" });
+"use strict";
+const $app = document.getElementById("app");
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+const REASON = { linked: "오늘 개념과 연결", weak: "내 약점 태그", random: "랜덤 태그" };
+const ICON = {
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>',
+  left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+};
+
 let site = null;
 
-async function text(path) {
+/* ---------- 유틸 ---------- */
+function h(tag, attrs = {}, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "html") el.innerHTML = v;  // 아이콘 같은 고정 문자열에만 사용
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  el.append(...children.flat().filter(c => c != null && c !== false));
+  return el;
+}
+const icon = name => h("span", { html: ICON[name], "aria-hidden": "true", style: "display:contents" });
+const ext = (href, attrs = {}, ...kids) => h("a", { href, target: "_blank", rel: "noopener", ...attrs }, ...kids);
+
+async function get(path, type = "json") {
   const r = await fetch(path, { cache: "no-cache" });
-  if (!r.ok) throw new Error(`${path}: ${r.status}`);
-  return r.text();
+  if (!r.ok) throw new Error(`${path} (${r.status})`);
+  return type === "json" ? r.json() : r.text();
 }
 
-// 생성된 마크다운에는 뉴스 제목이 들어가므로 항상 정화한 뒤 넣는다
-function md(src) {
-  const box = document.createElement("div");
+function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+function fmt(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function addDays(s, n) { const d = parseDate(s); d.setDate(d.getDate() + n); return fmt(d); }
+function longDate(s) { const d = parseDate(s); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${WEEKDAYS[d.getDay()]}요일`; }
+
+function repo() {
+  if (site.repo) return site.repo;
+  const host = location.hostname;
+  if (host.endsWith(".github.io")) return `${host.split(".")[0]}/${location.pathname.split("/")[1] || ""}`;
+  return "";
+}
+const ghNew = (dir, filename) => repo() && `https://github.com/${repo()}/new/main/${dir}?filename=${encodeURIComponent(filename)}`;
+const sourceChip = s => h("span", { class: `chip ${s === "Hacker News" ? "hn" : "gn"}` }, s === "Hacker News" ? "HN" : "GeekNews");
+
+// 사용자가 쓴 노트(마크다운)는 항상 정화한 뒤 넣는다
+function markdown(src) {
+  const box = h("div");
   box.innerHTML = DOMPurify.sanitize(marked.parse(src));
-  box.querySelectorAll("code.language-mermaid").forEach(code => {
-    const div = document.createElement("div");
-    div.className = "mermaid";
-    div.textContent = code.textContent;
-    code.parentElement.replaceWith(div);
-  });
+  box.querySelectorAll("a[href^='http']").forEach(a => { a.target = "_blank"; a.rel = "noopener"; });
   box.querySelectorAll("a[href]").forEach(a => {
-    const href = a.getAttribute("href");
-    let m;
-    if ((m = href.match(/(?:^|\/)(\d{4}-\d{2}-\d{2})\.md$/))) a.href = `#/day/${m[1]}`;
-    else if (/(^|\/)concepts\.md$/.test(href)) a.href = "#/concepts";
-    else if ((m = href.match(/weekly\/([\w-]+)\.md$/))) a.href = `#/weekly/${m[1]}`;
-    else if (/^weekly\/?$/.test(href)) a.href = "#/weekly";
-    else if (/^https?:/.test(href)) { a.target = "_blank"; a.rel = "noopener"; }
+    const m = a.getAttribute("href").match(/(\d{4}-\d{2}-\d{2})\.md$/);
+    if (m) a.href = `#/day/${m[1]}`;
   });
   return box;
 }
 
-async function show(...nodes) {
-  app.replaceChildren(...nodes);
-  const graphs = app.querySelectorAll(".mermaid");
-  if (graphs.length) await mermaid.run({ nodes: graphs });
-  window.scrollTo(0, 0);
+/* ---------- 테마 ---------- */
+function currentTheme() {
+  const set = document.documentElement.dataset.theme;
+  return set || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+}
+function paintThemeButton() {
+  const btn = document.getElementById("theme");
+  const dark = currentTheme() === "dark";
+  btn.innerHTML = dark ? ICON.sun : ICON.moon;
+  btn.setAttribute("aria-label", dark ? "라이트 모드로 전환" : "다크 모드로 전환");
+}
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
+document.getElementById("theme").addEventListener("click", () => {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch {}
+  paintThemeButton();
+  route();  // 그래프 색을 다시 그리기 위해
+});
+paintThemeButton();
+
+/* ---------- 잔디 ---------- */
+function heatmap(endDate) {
+  // 카드 폭을 채우는 주 수 (칸 12px + 간격 3px), 최대 1년
+  const weeks = Math.max(12, Math.min(53, Math.floor((Math.min(1040, innerWidth) - 90) / 15)));
+  const notes = new Set(site.notes), solved = new Set(site.solved);
+  const end = parseDate(endDate);
+  const start = new Date(end); start.setDate(end.getDate() - ((end.getDay() + 6) % 7) - 7 * (weeks - 1));
+  const grid = h("div", { class: "heat", role: "img", "aria-label": `최근 ${weeks}주 공부 기록` });
+  const weekStart = w => { const d = new Date(start); d.setDate(start.getDate() + w * 7); return d; };
+  // 달이 바뀌는 주에 라벨. 다음 라벨과 3칸 안으로 붙으면 앞의 것은 생략
+  const marks = [...Array(weeks).keys()].filter(w => w === 0 || weekStart(w).getMonth() !== weekStart(w - 1).getMonth());
+  const labels = new Set(marks.filter((w, i) => marks[i + 1] === undefined || marks[i + 1] - w >= 3));
+  for (let w = 0; w < weeks; w++) {
+    const first = weekStart(w);
+    grid.append(h("div", { class: "month" }, labels.has(w) ? `${first.getMonth() + 1}월` : ""));
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(first); d.setDate(first.getDate() + i);
+      const key = fmt(d);
+      if (d > end) { grid.append(h("div", { class: "cell future" })); continue; }
+      const p = site.history[key]?.problem;
+      const level = (notes.has(key) ? 1 : 0) + (p && solved.has(p.id) ? 1 : 0);
+      const label = `${key} · ${level === 2 ? "노트 + 풀이" : level === 1 ? (notes.has(key) ? "노트" : "풀이") : "기록 없음"}`;
+      grid.append(h("div", { class: `cell l${level}${key === endDate ? " today" : ""}`, title: label }));
+    }
+  }
+  const scroll = h("div", { class: "heat-scroll" }, grid);
+  requestAnimationFrame(() => { scroll.scrollLeft = scroll.scrollWidth; });
+  return h("div", { class: "card heat-card" },
+    h("div", { class: "heat-top" },
+      h("b", {}, "공부 잔디"),
+      h("div", { class: "legend" }, "적음", ...[0, 1, 2].map(l => h("i", { style: `background:var(--heat-${l})` })), "많음")),
+    scroll);
 }
 
-function el(tag, attrs = {}, children = []) {
-  const e = Object.assign(document.createElement(tag), attrs);
-  e.append(...children);
-  return e;
+/* ---------- 하루 페이지 ---------- */
+function stats() {
+  const s = site.stats;
+  const tile = (label, value, unit) => h("div", { class: "card stat" },
+    h("div", { class: "label" }, label), h("div", { class: "value" }, String(value), h("small", {}, unit)));
+  return h("div", { class: "stats" },
+    tile("🔥 연속 기록", s.streak, "일"), tile("📝 누적 노트", s.notes, "개"),
+    tile("✅ 푼 추천 문제", s.solved, "문제"), tile("📚 공부한 개념", s.concepts, "개"));
+}
+
+function conceptCard(c) {
+  return h("article", { class: "card concept" },
+    h("div", { class: "concept-top" },
+      h("span", { class: "chip" }, c.subject),
+      c.from_news ? h("span", { class: "chip warn" }, "📰 뉴스에서") : h("span", { class: "chip green" }, "📚 커리큘럼")),
+    h("h3", {}, c.name),
+    h("ul", {}, c.explanation.map(l => h("li", {}, l))),
+    h("div", { class: "ask" }, h("b", {}, "💬 면접 질문"), c.interview_question),
+    c.news && ext(c.news.link, { class: "related" }, sourceChip(c.news.source), h("span", {}, c.news.title)));
+}
+
+function quiz(items) {
+  if (!items?.length) return null;
+  return h("div", { class: "quiz" }, items.map((q, i) =>
+    h("details", { class: "card" },
+      h("summary", {}, h("span", { class: "q-no" }, String(i + 1)), h("span", { class: "q-text" }, q.question), h("span", { class: "q-hint" }, "정답 보기")),
+      h("div", { class: "answer" }, h("b", {}, q.answer), q.why))));
+}
+
+function problemCard(p, date) {
+  if (!p) return h("div", { class: "card pad muted" }, "오늘은 추천 문제를 가져오지 못했습니다.");
+  const done = site.solved.includes(p.id);
+  const upload = ghNew("solutions", `BOJ_${p.id}.py`);
+  return h("div", { class: "card problem" },
+    h("div", { class: "boj" }, h("div", {}, h("small", {}, "BOJ"), h("span", {}, String(p.id)))),
+    h("div", { class: "info" },
+      h("h3", {}, p.title),
+      h("div", { class: "meta" },
+        h("span", { class: "chip" }, `#${p.tag}`),
+        h("span", { class: "chip" }, REASON[p.reason] || ""),
+        done ? h("span", { class: "chip green" }, "✓ 풀었음") : h("span", { class: "chip warn" }, "아직 안 풂"))),
+    h("div", { class: "actions" },
+      ext(`https://www.acmicpc.net/problem/${p.id}`, { class: "btn primary" }, "문제 풀러 가기", icon("ext")),
+      !done && upload && ext(upload, { class: "btn" }, icon("plus"), "풀이 올리기")));
+}
+
+function pendingList(items) {
+  const open = (items || []).filter(x => !site.solved.includes(x.problem.id));
+  if (!open.length) return null;
+  return h("div", { class: "card pending" },
+    h("div", { class: "pending-head" }, "밀린 문제", h("span", { class: "chip warn" }, `${open.length}개`)),
+    h("ul", {}, open.map(x => h("li", {}, ext(`https://www.acmicpc.net/problem/${x.problem.id}`, {},
+      h("span", { class: "d" }, x.date.slice(5).replace("-", ".")), h("span", {}, `${x.problem.id} · ${x.problem.title}`))))));
+}
+
+function newsList(items) {
+  return h("div", { class: "card news" }, items.map(n =>
+    ext(n.link, {}, sourceChip(n.source),
+      h("div", { class: "n-body" }, h("div", { class: "n-title" }, n.title), h("div", { class: "n-line" }, n.one_line)))));
+}
+
+async function noteSection(date) {
+  if (site.notes.includes(date)) {
+    const src = (await get(`notes/${date}.md`, "text")).replace(/^subject:.*$/im, "");
+    return h("div", { class: "card note" }, markdown(src));
+  }
+  const create = ghNew("notes", `${date}.md`);
+  return h("div", { class: "card empty-note" },
+    h("p", {}, "아직 이 날의 노트가 없어요. 공부한 내용을 내 말로 정리하면 여기와 잔디에 표시됩니다."),
+    create && h("div", { class: "actions" },
+      ext(create, { class: "btn primary" }, icon("note"), "노트 쓰기"),
+      ext(`https://github.com/${repo()}/blob/main/notes/TEMPLATE.md`, { class: "btn" }, "템플릿 보기")));
+}
+
+function section(num, title, sub, ...body) {
+  return h("section", { class: "section" },
+    h("div", { class: "section-head" }, h("span", { class: "num" }, num), h("h2", {}, title), sub && h("span", { class: "sub" }, sub)),
+    ...body);
 }
 
 async function dayView(date) {
-  const parts = [md(await text(`daily/${date}.md`))];
-  try {
-    const note = md((await text(`notes/${date}.md`)).replace(/^subject:.*$/im, ""));
-    note.className = "note";
-    note.prepend(el("h2", { textContent: "📝 내 노트" }));
-    parts.push(note);
-  } catch { /* 아직 노트를 안 쓴 날 */ }
-  return parts;
+  let d;
+  try { d = await get(`data/daily/${date}.json`); }
+  catch { return [h("div", { class: "card notice" }, `${date}의 기록이 없습니다.`)]; }
+  const i = site.dates.indexOf(date);
+  const prev = site.dates[i + 1], next = site.dates[i - 1];
+  const isLatest = date === site.dates[0];
+  return [
+    h("div", { class: "hero" },
+      h("div", {},
+        h("p", { class: "eyebrow" }, isLatest ? "오늘의 TodayToDo" : "지난 기록"),
+        h("h1", {}, longDate(date))),
+      h("div", { class: "day-nav" },
+        h("a", { class: "btn", href: prev ? `#/day/${prev}` : null, "aria-disabled": !prev, style: prev ? null : "opacity:.4;pointer-events:none", "aria-label": "이전 날" }, icon("left")),
+        h("a", { class: "btn", href: next ? `#/day/${next}` : null, "aria-disabled": !next, style: next ? null : "opacity:.4;pointer-events:none", "aria-label": "다음 날" }, icon("right")))),
+    isLatest && stats(),
+    isLatest && heatmap(site.updated),
+    section("1", "오늘의 CS", "커리큘럼 1개 + 뉴스에서 1개",
+      h("div", { class: "grid-2" }, d.concepts.map(conceptCard)),
+      d.reviews?.length ? h("div", { class: "reviews" }, h("span", { class: "muted", style: "font-size:13.5px;font-weight:600" }, "🔁 복습"),
+        d.reviews.map(r => h("a", { href: `#/day/${r.date}` }, h("span", { class: "chip" }, `${r.offset}일 전 · ${r.names.join(", ")}`)))) : null,
+      quiz(d.quiz)),
+    section("2", "오늘의 문제", null, problemCard(d.problem, date), pendingList(d.pending)),
+    section("3", "오늘의 뉴스", "GeekNews · Hacker News", newsList(d.news)),
+    section("4", "내 노트", null, await noteSection(date)),
+  ];
 }
 
+/* ---------- 기록 목록 ---------- */
+function daysView() {
+  const notes = new Set(site.notes), solved = new Set(site.solved);
+  const list = h("div");
+  const input = h("input", { class: "search", type: "search", placeholder: "개념 이름으로 찾기", "aria-label": "개념 이름으로 찾기" });
+  function draw() {
+    const q = input.value.trim().toLowerCase();
+    const groups = new Map();
+    for (const date of site.dates) {
+      const day = site.history[date];
+      if (q && !day.concepts.some(c => c.name.toLowerCase().includes(q))) continue;
+      const key = date.slice(0, 7);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(date);
+    }
+    list.replaceChildren(...(groups.size ? [...groups].flatMap(([month, dates]) => [
+      h("div", { class: "month-label" }, `${month.slice(0, 4)}년 ${Number(month.slice(5))}월`),
+      h("div", { class: "card rows" }, dates.map(date => {
+        const day = site.history[date], p = day.problem, dt = parseDate(date);
+        return h("a", { class: "row", href: `#/day/${date}` },
+          h("div", { class: "date" }, h("b", {}, String(dt.getDate())), h("span", {}, `${WEEKDAYS[dt.getDay()]}요일`)),
+          h("div", { class: "names" }, day.concepts.map(c => h("span", { class: "chip" }, c.name))),
+          h("div", { class: "flags" },
+            h("span", { class: `flag${notes.has(date) ? " on" : ""}`, title: notes.has(date) ? "노트 있음" : "노트 없음" }, icon("note")),
+            h("span", { class: `flag${p && solved.has(p.id) ? " on" : ""}`, title: p && solved.has(p.id) ? "문제 풂" : "문제 안 풂" }, icon("check"))));
+      })),
+    ]) : [h("div", { class: "card notice" }, "찾는 개념이 없습니다.")]));
+  }
+  input.addEventListener("input", draw);
+  draw();
+  return [
+    h("div", { class: "page-head" }, h("h1", {}, "기록"), h("p", {}, `지금까지 ${site.dates.length}일 동안의 기록`)),
+    h("div", { class: "toolbar" }, input), list];
+}
+
+/* ---------- 개념 ---------- */
+function conceptsView() {
+  const byName = new Map();
+  for (const date of [...site.dates].reverse()) {
+    for (const c of site.history[date].concepts) {
+      const e = byName.get(c.name) || { name: c.name, subject: c.subject, dates: [] };
+      e.dates.push(date);
+      byName.set(c.name, e);
+    }
+  }
+  const all = [...byName.values()].sort((a, b) => b.dates.at(-1).localeCompare(a.dates.at(-1)));
+  const subjects = ["전체", ...new Set(all.map(c => c.subject))];
+  let subject = "전체";
+  const input = h("input", { class: "search", type: "search", placeholder: "개념 찾기", "aria-label": "개념 찾기" });
+  const filters = h("div", { class: "filters", role: "group", "aria-label": "과목" });
+  const grid = h("div", { class: "concept-grid" });
+  function draw() {
+    const q = input.value.trim().toLowerCase();
+    filters.replaceChildren(...subjects.map(s => h("button", {
+      type: "button", class: s === subject ? "on" : "", "aria-pressed": String(s === subject),
+      onclick: () => { subject = s; draw(); } }, s)));
+    const shown = all.filter(c => (subject === "전체" || c.subject === subject) && (!q || c.name.toLowerCase().includes(q)));
+    grid.replaceChildren(...(shown.length ? shown.map(c => h("a", { class: "card ctile", href: `#/day/${c.dates.at(-1)}` },
+      h("span", { class: "chip", style: "align-self:flex-start" }, c.subject),
+      h("b", {}, c.name),
+      h("div", { class: "foot" }, h("span", {}, c.dates.at(-1)), c.dates.length > 1 ? h("span", { class: "chip green" }, `${c.dates.length}번 공부`) : null)))
+      : [h("div", { class: "card notice", style: "grid-column:1/-1" }, "찾는 개념이 없습니다.")]));
+  }
+  input.addEventListener("input", draw);
+  draw();
+  const graph = h("details", { class: "card graph-box" },
+    h("summary", {}, "개념 연결 그래프", h("span", { class: "muted", style: "font-weight:500;font-size:13.5px" }, "펼쳐 보기")));
+  graph.addEventListener("toggle", async () => {
+    if (!graph.open || graph.dataset.done) return;
+    graph.dataset.done = "1";
+    const box = h("div", { class: "mermaid" });
+    box.textContent = site.graph;
+    graph.append(box);
+    mermaid.initialize({ startOnLoad: false, theme: currentTheme() === "dark" ? "dark" : "default", securityLevel: "strict" });
+    await mermaid.run({ nodes: [box] });
+  });
+  return [
+    h("div", { class: "page-head" }, h("h1", {}, "개념"), h("p", {}, `지금까지 공부한 개념 ${all.length}개`)),
+    h("div", { class: "toolbar" }, input), filters, h("div", { style: "height:14px" }), grid, graph];
+}
+
+/* ---------- 주간 ---------- */
+function weeklyListView() {
+  return [
+    h("div", { class: "page-head" }, h("h1", {}, "주간 리포트"), h("p", {}, "매주 월요일 아침에 지난주를 정리합니다")),
+    site.weeks.length
+      ? h("div", { class: "week-list" }, site.weeks.map(w => h("a", { class: "card", href: `#/weekly/${w}` },
+          h("span", { class: "muted", style: "font-size:13px" }, w.slice(0, 4)), h("b", {}, `${Number(w.slice(6))}주차`))))
+      : h("div", { class: "card notice" }, "첫 주간 리포트는 다음 월요일 아침에 생깁니다.")];
+}
+
+async function weeklyView(w) {
+  return [h("a", { class: "btn", href: "#/weekly", style: "margin-bottom:16px" }, icon("left"), "주간 리포트"),
+          h("div", { class: "card note" }, markdown(await get(`weekly/${w}.md`, "text")))];
+}
+
+/* ---------- 첫 실행 전 ---------- */
+function onboarding() {
+  const r = repo();
+  const link = (path, text) => r ? ext(`https://github.com/${r}/${path}`, {}, text) : text;
+  return [h("div", { class: "card onboard" },
+    h("h1", {}, "아직 첫 기록이 없어요 🌱"),
+    h("p", { class: "muted", style: "margin:0" }, "아래 순서대로 한 번만 설정하면 매일 아침 7시에 자동으로 채워집니다."),
+    h("ol", {},
+      h("li", {}, h("span", {}, link("settings/secrets/actions", "Secrets"), "에 ", h("code", {}, "ANTHROPIC_API_KEY"), "를 등록하세요.")),
+      h("li", {}, h("span", {}, h("code", {}, "config.json"), "의 ", h("code", {}, "solvedac_handle"), "에 백준 아이디를 넣으세요.")),
+      h("li", {}, h("span", {}, link("actions/workflows/daily.yml", "Actions → daily"), "에서 Run workflow를 누르세요.")),
+      h("li", {}, h("span", {}, "2~3분 뒤 이 페이지를 새로고침하세요."))))];
+}
+
+/* ---------- 라우터 ---------- */
 const routes = [
-  [/^#?\/?$/, "today", async () => {
-    if (!site.dates.length) return [el("p", { className: "empty", textContent: "아직 첫 실행 전입니다. Actions에서 daily 워크플로를 실행해 주세요." })];
-    const heat = el("div", { className: "heat" }, [el("img", { src: `assets/heatmap.svg?v=${site.dates[0]}`, alt: "최근 20주 공부 잔디" })]);
-    return [heat, ...(await dayView(site.dates[0]))];
-  }],
-  [/^#\/day\/(\d{4}-\d{2}-\d{2})$/, "days", (d) => dayView(d)],
-  [/^#\/days$/, "days", async () => [
-    el("h1", { textContent: "지난 기록" }),
-    el("ul", { className: "list" }, site.dates.map(d => el("li", {}, [
-      el("a", { href: `#/day/${d}` }, [d, el("small", { textContent: (site.titles[d] || []).join(" · ") })])]))),
-  ]],
-  [/^#\/concepts$/, "concepts", async () => [md(await text("concepts.md"))]],
-  [/^#\/weekly$/, "weekly", async () => site.weeks.length
-    ? [el("h1", { textContent: "주간 리포트" }),
-       el("ul", { className: "list" }, site.weeks.map(w => el("li", {}, [el("a", { href: `#/weekly/${w}`, textContent: w })])))]
-    : [el("p", { className: "empty", textContent: "첫 주간 리포트는 다음 월요일 아침에 생깁니다." })]],
-  [/^#\/weekly\/([\w-]+)$/, "weekly", async (w) => [md(await text(`weekly/${w}.md`))]],
+  [/^#?\/?$/, "today", () => site.dates.length ? dayView(site.dates[0]) : onboarding()],
+  [/^#\/day\/(\d{4}-\d{2}-\d{2})$/, "days", d => dayView(d)],
+  [/^#\/days$/, "days", daysView],
+  [/^#\/concepts$/, "concepts", conceptsView],
+  [/^#\/weekly$/, "weekly", weeklyListView],
+  [/^#\/weekly\/(\d{4}-W\d{2})$/, "weekly", weeklyView],
 ];
 
+function skeleton() {
+  $app.replaceChildren(
+    h("div", { class: "skeleton", style: "height:72px;max-width:360px;margin-bottom:22px" }),
+    h("div", { class: "skeleton", style: "height:90px" }),
+    h("div", { class: "skeleton", style: "height:260px;margin-top:16px" }));
+}
+
+let seq = 0;
 async function route() {
+  const id = ++seq;
   const hash = location.hash || "#/";
   for (const [re, nav, view] of routes) {
     const m = hash.match(re);
     if (!m) continue;
     document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.dataset.nav === nav));
-    try { await show(...(await view(...m.slice(1)))); }
-    catch (e) { await show(el("p", { className: "empty", textContent: `페이지를 불러오지 못했습니다. (${e.message})` })); }
+    if (nav === "today" || hash.startsWith("#/day/")) skeleton();
+    let nodes;
+    try { nodes = await view(...m.slice(1)); }
+    catch (e) { nodes = [h("div", { class: "card notice" }, `페이지를 불러오지 못했습니다. (${e.message})`)]; }
+    if (id !== seq) return;  // 그사이 다른 페이지로 이동함
+    $app.replaceChildren(...[].concat(nodes).filter(Boolean));
+    window.scrollTo(0, 0);
     return;
   }
   location.hash = "#/";
 }
 
 (async () => {
-  try { site = JSON.parse(await text("data/site.json")); }
-  catch { site = { dates: [], weeks: [], titles: {} }; }
+  skeleton();
+  try { site = await get("data/site.json"); }
+  catch { site = { dates: [], weeks: [], notes: [], solved: [], history: {}, stats: {}, graph: "", repo: "" }; }
+  site.dates = Object.keys(site.history || {}).sort().reverse();
+  const r = repo();
+  document.getElementById("foot").replaceChildren(
+    h("span", {}, site.updated ? `마지막 업데이트 ${site.updated}` : ""),
+    r && ext(`https://github.com/${r}`, {}, "GitHub 저장소"),
+    h("span", {}, "뉴스 출처: ", ext("https://news.hada.io", {}, "GeekNews"), " · ", ext("https://news.ycombinator.com", {}, "Hacker News")));
   addEventListener("hashchange", route);
   route();
 })();

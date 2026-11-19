@@ -4,10 +4,10 @@
   "solvedac_handle": "",
   "tier": "s3..g4",
   "fields": {
-    "backend": ["백엔드", "Spring", "Kafka", "Redis", "MSA", "데이터베이스", "클라우드", "장애"],
-    "ai": ["LLM", "생성형 AI", "GPU", "AI 에이전트", "머신러닝", "AI 반도체"],
-    "security": ["해킹", "보안 취약점", "개인정보 유출", "랜섬웨어", "제로트러스트"],
-    "general": ["IT", "개발자", "오픈소스", "반도체", "데이터센터", "플랫폼"]
+    "backend": ["백엔드", "backend", "Spring", "Java", "Kotlin", "Kafka", "Redis", "Postgres", "MySQL", "데이터베이스", "database", "SQL", "MSA", "microservice", "distributed", "분산", "클라우드", "cloud", "AWS", "Kubernetes", "장애", "outage", "API", "성능", "performance"],
+    "ai": ["LLM", "AI", "GPU", "에이전트", "agent", "model", "모델", "inference", "추론", "RAG", "MCP", "machine learning", "머신러닝"],
+    "security": ["보안", "security", "취약점", "vulnerability", "CVE", "해킹", "exploit", "랜섬웨어", "ransomware", "인증", "auth", "encryption", "암호화"],
+    "frontend": ["프론트엔드", "frontend", "React", "Vue", "Svelte", "CSS", "JavaScript", "TypeScript", "브라우저", "browser", "웹", "web"]
   },
   "tags": [
     "implementation", "greedy", "sorting", "binary_search", "two_pointer", "prefix_sum",

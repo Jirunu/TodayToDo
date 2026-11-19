@@ -7,15 +7,30 @@ from pathlib import Path
 
 import todaytodo as t
 
-# 뉴스 정제·중복 제거
-items = [
-    {"title": "<b>Redis</b> 장애 &amp; 복구", "description": "캐시 <b>서버</b>", "originallink": "https://a.com/1", "link": "https://n.com/1"},
-    {"title": "중복", "description": "", "originallink": "https://a.com/1", "link": "https://n.com/2"},
-    {"title": "원문 없음", "description": "", "originallink": "", "link": "https://n.com/3"},
-]
-news = t.dedupe(items)
-assert [n["link"] for n in news] == ["https://a.com/1", "https://n.com/3"]
-assert news[0]["title"] == "Redis 장애 & 복구" and news[0]["desc"] == "캐시 서버"
+# GeekNews Atom 파싱: 태그 제거, 엔티티 복원, utm 없는 id를 링크로
+atom = """<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns='http://www.w3.org/2005/Atom'>
+<entry><title>&lt;b&gt;Redis&lt;/b&gt; 장애 &amp;amp; 복구</title>
+<link rel='alternate' href='https://news.hada.io/topic?id=1&amp;utm_source=x'/>
+<id>https://news.hada.io/topic?id=1</id><content type='html'>&lt;p&gt;캐시 &lt;b&gt;서버&lt;/b&gt;&lt;/p&gt;</content></entry>
+</feed>""".encode()
+gn = t.parse_geeknews(atom)
+assert gn == [{"title": "Redis 장애 & 복구", "desc": "캐시 서버", "link": "https://news.hada.io/topic?id=1", "source": "GeekNews"}]
+
+# Hacker News: 스토리만, 링크 없으면 HN 글 주소
+assert t.hn_story({"id": 7, "type": "story", "title": "Show HN: x &amp; y", "score": 10, "descendants": 3}) == {
+    "title": "Show HN: x & y", "desc": "Hacker News 10점 · 댓글 3개", "link": "https://news.ycombinator.com/item?id=7", "source": "Hacker News"}
+assert t.hn_story({"id": 8, "type": "job", "title": "hiring"}) is None
+assert t.hn_story({"id": 9, "type": "story", "title": "x", "dead": True}) is None
+assert t.hn_story(None) is None
+
+# 중복 제거와 관심 키워드 정렬 (영문은 단어 단위, 동점은 원래 순서)
+def N(title, link, desc=""):
+    return {"title": title, "desc": desc, "link": link, "source": "GeekNews"}
+news = t.dedupe([N("Redis 장애 & 복구", "https://a.com/1"), N("중복", "https://a.com/1"), N("빈 링크", "")])
+assert [n["title"] for n in news] == ["Redis 장애 & 복구"]
+ranked = t.rank([N("He said hi", "1"), N("Kafka 운영기", "2"), N("새 AI 모델", "3"), N("Redis와 Kafka", "4")], ["AI", "Kafka", "Redis"])
+assert [n["link"] for n in ranked] == ["4", "2", "3", "1"]
 
 # 커리큘럼은 시작일 기준으로 순환
 start = date.fromisoformat(t.CONFIG["start_date"])
@@ -103,16 +118,12 @@ assert svg.count("<title>") == 7 + 4  # 지난주 월~일 + 이번 주 월~목
 assert svg.count('fill="#30a14e"><title>2026-12-09') == 1 and 'fill="#9be9a8"><title>2026-12-07' in svg
 assert 'fill="#ebedf0"><title>2026-12-08' in svg  # 노트 없고 문제도 안 풂
 
-# 뉴스: 검색어 하나가 실패해도 나머지는 가져온다
-import os
-os.environ.setdefault("NAVER_CLIENT_ID", "x")
-os.environ.setdefault("NAVER_CLIENT_SECRET", "x")
-def flaky(url, headers=None):
-    if "%EC%8B%A4%ED%8C%A8" in url:  # "실패"
-        raise OSError("boom")
-    return {"items": [{"title": url[-5:], "description": "", "originallink": url, "link": url}]}
-t.get_json = flaky
-assert len(t.fetch_news(["성공1", "실패", "성공2"])) == 2
+# 뉴스: 한 곳이 실패해도 나머지는 가져온다
+def boom():
+    raise OSError("boom")
+t.fetch_geeknews, real_hn = boom, t.fetch_hn
+t.fetch_hn = lambda: [N("Kafka 이야기", "https://h/1"), N("other", "https://h/2")]
+assert [n["link"] for n in t.fetch_news(["Kafka"])] == ["https://h/1", "https://h/2"]
 
 # README 블록 치환은 마커 사이만 바꾼다
 text = "앞\n<!-- TODAY:START -->\n옛날\n<!-- TODAY:END -->\n뒤"
@@ -164,7 +175,14 @@ try:
     assert "```mermaid" in (tmp / "concepts.md").read_text(encoding="utf-8")
     assert (tmp / "assets" / "heatmap.svg").read_text(encoding="utf-8").startswith("<svg")
     site = t.load_json(tmp / "data" / "site.json", {})
-    assert site["dates"] == [str(today), yesterday] and site["titles"][yesterday] == ["어제 개념"] and site["weeks"] == sorted(site["weeks"], reverse=True)
+    assert list(site["history"]) == [str(today), yesterday] and site["history"][yesterday]["concepts"][0]["name"] == "어제 개념"
+    assert site["notes"] == [yesterday] and site["stats"] == {"streak": 1, "notes": 1, "solved": 0, "concepts": 3}
+    assert site["graph"].startswith("graph LR") and site["updated"] == str(today)
+    dj = t.load_json(tmp / "data" / "daily" / f"{today}.json", {})
+    assert dj["concepts"][1]["news"] == {"title": "Redis 장애 & 복구", "link": "https://a.com/1", "source": "GeekNews"}
+    assert dj["concepts"][0]["news"] is None and dj["concepts"][0]["explanation"] == ["줄1", "줄2", "줄3"]
+    assert [n["one_line"] for n in dj["news"]] == ["캐시 장애 사례"] and dj["pending"][0]["problem"]["id"] == 42
+    assert dj["reviews"] == [{"offset": 1, "date": yesterday, "names": ["어제 개념"]}]
     readme = (tmp / "README.md").read_text(encoding="utf-8")
     assert "아직 첫 실행 전" not in readme and "| 운영체제 |" in readme and "## 설정" in readme
     assert json.loads(t.HISTORY_FILE.read_text(encoding="utf-8"))[str(today)]["problem"]["id"] == 1920

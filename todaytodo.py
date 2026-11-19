@@ -1,4 +1,4 @@
-"""TodayToDo: 매일 IT 뉴스 -> 오늘의 CS 개념 -> 백준 문제 추천 -> daily/날짜.md + README 갱신."""
+"""TodayToDo: 매일 기술 뉴스(GeekNews, Hacker News) -> 오늘의 CS 개념 -> 백준 문제 추천 -> daily/ + data/ + README 갱신."""
 import html
 import json
 import os
@@ -7,7 +7,9 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -42,30 +44,70 @@ def clean(s):
 
 
 # ---------- ③ News ----------
+# GeekNews: robots.txt가 RSS 수집과 AI 입력(ai-input=yes)을 허용. Hacker News: 공식 API(MIT).
+GEEKNEWS_FEED = "https://news.hada.io/rss/news"
+HN_API = "https://hacker-news.firebaseio.com/v0/"
+ATOM = {"a": "http://www.w3.org/2005/Atom"}
+
+
+def get_bytes(url):
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=20) as r:
+        return r.read()
+
+
+def parse_geeknews(raw):
+    root = ET.fromstring(raw)
+    return [{"title": clean(e.findtext("a:title", "", ATOM)),
+             "desc": clean(e.findtext("a:content", "", ATOM))[:300],
+             "link": e.findtext("a:id", "", ATOM).strip(),
+             "source": "GeekNews"} for e in root.findall("a:entry", ATOM)]
+
+
+def fetch_geeknews():
+    return parse_geeknews(get_bytes(GEEKNEWS_FEED))
+
+
+def hn_story(it):
+    if not it or it.get("type") != "story" or not it.get("title") or it.get("dead") or it.get("deleted"):
+        return None
+    return {"title": clean(it["title"]),
+            "desc": f"Hacker News {it.get('score', 0)}점 · 댓글 {it.get('descendants', 0)}개",
+            "link": it.get("url") or f"https://news.ycombinator.com/item?id={it['id']}",
+            "source": "Hacker News"}
+
+
+def fetch_hn(limit=60):
+    ids = get_json(HN_API + "topstories.json")[:limit]
+    with ThreadPoolExecutor(8) as ex:
+        items = ex.map(lambda i: get_json(f"{HN_API}item/{i}.json"), ids)
+        return [s for s in map(hn_story, items) if s]
+
+
 def dedupe(items):
     seen, out = set(), []
     for it in items:
-        link = it.get("originallink") or it["link"]
-        if link in seen:
-            continue
-        seen.add(link)
-        out.append({"title": clean(it["title"]), "desc": clean(it["description"]), "link": link})
+        if it["link"] and it["link"] not in seen:
+            seen.add(it["link"])
+            out.append(it)
     return out
 
 
-def fetch_news(keywords, per_keyword=20):
-    headers = {
-        "X-Naver-Client-Id": os.environ["NAVER_CLIENT_ID"],
-        "X-Naver-Client-Secret": os.environ["NAVER_CLIENT_SECRET"],
-    }
+def rank(items, keywords):
+    """관심 키워드가 많이 들어간 글을 앞으로. 동점이면 원래 순서(인기·최신순) 유지."""
+    # 영문 키워드는 영문·숫자 경계로 ("AI"가 "said"에 안 걸리고 "Redis와"에는 걸리게), 한글은 부분 일치
+    pats = [re.compile(rf"(?<![a-z0-9]){re.escape(k.lower())}(?![a-z0-9])") if k.isascii() else re.compile(re.escape(k))
+            for k in keywords]
+    return sorted(items, key=lambda n: -sum(bool(p.search(f"{n['title']} {n['desc']}".lower())) for p in pats))
+
+
+def fetch_news(keywords):
     items = []
-    for kw in keywords:
-        q = urllib.parse.urlencode({"query": kw, "display": per_keyword, "sort": "date"})
+    for name, fetch in (("GeekNews", fetch_geeknews), ("Hacker News", fetch_hn)):
         try:
-            items += get_json(f"https://openapi.naver.com/v1/search/news.json?{q}", headers)["items"]
-        except Exception as e:  # 검색어 하나가 실패해도 나머지로 진행. 전부 실패하면 main에서 멈춘다
-            print(f"뉴스 검색 실패 ({kw}): {e}", file=sys.stderr)
-    return dedupe(items)
+            items += fetch()
+        except Exception as e:  # 한 곳이 실패해도 나머지로 진행. 전부 실패하면 main에서 멈춘다
+            print(f"뉴스 수집 실패 ({name}): {e}", file=sys.stderr)
+    return rank(dedupe(items), keywords)
 
 
 def update_keywords(dynamic, new, today, base, max_n=10, ttl_days=7):
@@ -116,16 +158,17 @@ def analyze(news, concept, tags, recent):
                 "properties": {"question": {"type": "string"}, "answer": {"type": "string"}, "why": {"type": "string"}}}},
         },
     }
-    news_text = "\n".join(f"[{i}] {n['title']} — {n['desc']}" for i, n in enumerate(news))
+    news_text = "\n".join(f"[{i}] ({n['source']}) {n['title']} — {n['desc']}" for i, n in enumerate(news))
     recent_text = ", ".join(recent) if recent else "(없음)"
-    prompt = f"""너는 취업 준비 중인 백엔드 개발자의 CS 공부 코치다. 아래는 오늘 수집한 IT 뉴스 목록이다.
+    prompt = f"""너는 취업 준비 중인 개발자의 CS 공부 코치다. 관심 분야는 "{CONFIG['field']}"이다.
+아래는 오늘 GeekNews와 Hacker News에서 수집한 기술 뉴스 목록이다 (영어 제목도 있다).
 
 {news_text}
 
 최근 30일 동안 이미 공부한 개념: {recent_text}
 
-다음을 한국어로 만들어라.
-1. news: 개발자가 볼 만한 핫한 뉴스 5개. index는 위 목록 번호, one_line은 왜 중요한지 한 줄.
+다음을 모두 한국어로 만들어라.
+1. news: 관심 분야 개발자가 볼 만한 핫한 뉴스 5개. index는 위 목록 번호, one_line은 무슨 내용이고 왜 중요한지 한 줄.
 2. concepts: 정확히 2개.
    - 첫째는 오늘의 커리큘럼 개념 "{concept['name']}" (subject "{concept['subject']}", from_news false). 관련 뉴스가 있으면 news_index에 번호, 없으면 -1.
    - 둘째는 뉴스에서 뽑은 공부할 만한 CS 개념 (from_news true, news_index는 근거 뉴스 번호). 최근 공부한 개념과 겹치지 않게.
@@ -237,53 +280,76 @@ def problem_line(p):
     return f"- {boj(p)} `#{p['tag']}` ({REASON.get(p.get('reason'), '')})"
 
 
-def render_daily(day, news, result, problem, pending, reviews, cur_streak):
+def news_ref(item):
+    return {"title": item["title"], "link": item["link"], "source": item["source"]}
+
+
+def daily_data(day, news, result, problem, pending, reviews, cur_streak):
+    """하루치 결과를 웹 페이지(data/daily/날짜.json)와 마크다운이 같이 쓰는 형태로 정리."""
+    return {
+        "date": str(day),
+        "streak": cur_streak,
+        "concepts": [{
+            "name": c["name"], "subject": c["subject"], "from_news": c["from_news"],
+            "explanation": [l.strip() for l in c["explanation"].splitlines() if l.strip()],
+            "interview_question": c["interview_question"],
+            "news": news_ref(news[c["news_index"]]) if valid_index(c["news_index"], news) else None,
+        } for c in result["concepts"]],
+        "quiz": result.get("quiz", []),
+        "reviews": [{"offset": off, "date": d, "names": names} for off, d, names in reviews],
+        "problem": problem,
+        "pending": [{"date": d, "problem": p} for d, p in pending],
+        "news": [{**news_ref(news[n["index"]]), "one_line": n["one_line"]} for n in result["news"] if valid_index(n["index"], news)],
+    }
+
+
+def render_daily(data):
+    day = data["date"]
     lines = [f"# {day} TodayToDo", "", "## ① 오늘의 CS", ""]
-    for c in result["concepts"]:
+    for c in data["concepts"]:
         badge = "📰 뉴스에서" if c["from_news"] else "📚 커리큘럼"
         lines += [f"### {c['name']} ({c['subject']}) · {badge}", ""]
-        lines += [f"- {l.strip()}" for l in c["explanation"].splitlines() if l.strip()]
+        lines += [f"- {l}" for l in c["explanation"]]
         lines += ["", f"> 💬 면접 질문: {c['interview_question']}"]
-        if valid_index(c["news_index"], news):
-            n = news[c["news_index"]]
-            lines += [">", f"> 🔗 관련 뉴스: [{n['title']}]({n['link']})"]
+        if c["news"]:
+            lines += [">", f"> 🔗 관련 뉴스 ({c['news']['source']}): [{c['news']['title']}]({c['news']['link']})"]
         lines.append("")
-    if reviews:
+    if data["reviews"]:
         lines += ["**🔁 복습할 개념**", ""]
-        lines += [f"- {off}일 전 ([{d}]({d}.md)): {', '.join(names)}" for off, d, names in reviews]
+        lines += [f"- {r['offset']}일 전 ([{r['date']}]({r['date']}.md)): {', '.join(r['names'])}" for r in data["reviews"]]
         lines.append("")
-    if result.get("quiz"):
+    if data["quiz"]:
         lines += ["**🧠 확인 퀴즈**", ""]
-        for i, q in enumerate(result["quiz"], 1):
+        for i, q in enumerate(data["quiz"], 1):
             lines += [f"{i}. {q['question']}", f"<details><summary>정답</summary>{q['answer']} — {q['why']}</details>", ""]
-    lines += ["## ② 오늘의 문제", "", problem_line(problem), ""]
-    if pending:
-        lines += [f"**밀린 문제 {len(pending)}개**", ""] + [f"- {d}: {boj(p)}" for d, p in pending] + [""]
+    lines += ["## ② 오늘의 문제", "", problem_line(data["problem"]), ""]
+    if data["pending"]:
+        lines += [f"**밀린 문제 {len(data['pending'])}개**", ""] + [f"- {x['date']}: {boj(x['problem'])}" for x in data["pending"]] + [""]
     lines += ["## ③ 오늘의 뉴스", ""]
-    for n in result["news"]:
-        if valid_index(n["index"], news):
-            item = news[n["index"]]
-            lines.append(f"- [{item['title']}]({item['link']}) — {n['one_line']}")
-    lines += ["", "## ④ 오늘의 기록", "", f"- 🔥 연속 기록: {cur_streak}일",
+    lines += [f"- [{n['title']}]({n['link']}) `{n['source']}` — {n['one_line']}" for n in data["news"]]
+    lines += ["", "## ④ 오늘의 기록", "", f"- 🔥 연속 기록: {data['streak']}일",
               f"- 공부한 내용은 `notes/{day}.md`에, 풀이는 `solutions/BOJ_번호.확장자`로 커밋하세요.", ""]
     return "\n".join(lines)
 
 
-def render_graph(history, limit=60):
-    """최근 개념 limit개를 과목별로 묶고, LLM이 고른 관련 개념끼리 잇는 Mermaid 그래프."""
+def graph_mermaid(history, limit=60):
+    """최근 개념 limit개를 과목별로 묶고, LLM이 고른 관련 개념끼리 잇는 Mermaid 그래프 본문."""
     entries = [(c["name"], c["subject"], c.get("related", [])) for _, v in sorted(history.items()) for c in v["concepts"]]
     names = list(dict.fromkeys(n for n, _, _ in entries))[-limit:]
     ids = {n: f"n{i}" for i, n in enumerate(names)}
     subject = {n: s for n, s, _ in entries}
     edges = sorted({tuple(sorted((n, r))) for n, _, rel in entries for r in rel if n in ids and r in ids and r != n})
-    lines = ["```mermaid", "graph LR"]
+    lines = ["graph LR"]
     for si, s in enumerate(sorted({subject[n] for n in names})):
         lines.append(f'  subgraph s{si} ["{s.replace(chr(34), chr(39))}"]')
         lines += [f'    {ids[n]}["{n.replace(chr(34), chr(39))}"]' for n in names if subject[n] == s]
         lines.append("  end")
     lines += [f"  {ids[a]} --- {ids[b]}" for a, b in edges]
-    lines.append("```")
     return "\n".join(lines)
+
+
+def render_graph(history, limit=60):
+    return f"```mermaid\n{graph_mermaid(history, limit)}\n```"
 
 
 def render_heatmap(history, dates, solved, today, weeks=20):
@@ -349,6 +415,24 @@ def render_readme_block(day, problem, cur_streak, counts, total_notes):
     return "\n".join(lines)
 
 
+def site_data(history, dates, solved, today, cur_streak):
+    """github.io 페이지(index.html)가 처음에 읽는 목차와 통계."""
+    recommended = {p["id"] for v in history.values() if (p := v.get("problem"))}
+    return {
+        "updated": str(today),
+        "repo": os.environ.get("GITHUB_REPOSITORY", ""),
+        "field": CONFIG["field"],
+        "stats": {"streak": cur_streak, "notes": len(dates), "solved": len(recommended & solved),
+                  "concepts": len({c["name"] for v in history.values() for c in v["concepts"]})},
+        "notes": sorted(str(d) for d in dates),
+        "solved": sorted(solved),
+        "weeks": sorted((f.stem for f in (ROOT / "weekly").glob("*.md")), reverse=True),
+        "history": {k: {"concepts": [{"name": c["name"], "subject": c["subject"]} for c in v["concepts"]],
+                        "problem": v.get("problem")} for k, v in sorted(history.items(), reverse=True)},
+        "graph": graph_mermaid(history),
+    }
+
+
 def replace_block(text, block, start="<!-- TODAY:START -->", end="<!-- TODAY:END -->"):
     return re.sub(f"{start}.*?{end}", lambda _: f"{start}\n{block}\n{end}", text, flags=re.S)
 
@@ -363,8 +447,9 @@ def notify(day, result, problem):
     lines = [f"**{day} TodayToDo**"] + [f"📚 {c['name']} ({c['subject']})" for c in result["concepts"]]
     if problem:
         lines.append(f"🧩 BOJ {problem['id']} {problem['title']} https://www.acmicpc.net/problem/{problem['id']}")
-    if repo:
-        lines.append(f"https://github.com/{repo}/blob/main/daily/{day}.md")
+    if "/" in repo:
+        owner, name = repo.split("/", 1)
+        lines.append(f"https://{owner.lower()}.github.io/{name}/#/day/{day}")
     req = urllib.request.Request(url, data=json.dumps({"content": "\n".join(lines)[:1900]}).encode(),
                                  headers={"Content-Type": "application/json", "User-Agent": UA})
     try:
@@ -404,10 +489,12 @@ def main():
 
     dates, solved = note_dates(), solved_ids()
     cur_streak = streak(dates, today)
+    data = daily_data(today, news, result, problem, pending_problems(history, solved, today),
+                      review_concepts(history, today), cur_streak)
     (ROOT / "daily").mkdir(exist_ok=True)
-    (ROOT / "daily" / f"{today}.md").write_text(
-        render_daily(today, news, result, problem, pending_problems(history, solved, today),
-                     review_concepts(history, today), cur_streak), encoding="utf-8")
+    (ROOT / "daily" / f"{today}.md").write_text(render_daily(data), encoding="utf-8")
+    (ROOT / "data" / "daily").mkdir(parents=True, exist_ok=True)
+    save_json(ROOT / "data" / "daily" / f"{today}.json", data)
     (ROOT / "concepts.md").write_text(render_archive(history), encoding="utf-8")
     (ROOT / "assets").mkdir(exist_ok=True)
     (ROOT / "assets" / "heatmap.svg").write_text(render_heatmap(history, dates, solved, today), encoding="utf-8")
@@ -416,12 +503,7 @@ def main():
         (ROOT / "weekly").mkdir(exist_ok=True)
         (ROOT / "weekly" / f"{title}.md").write_text(text, encoding="utf-8")
 
-    # github.io 페이지(index.html)가 읽는 목차
-    save_json(ROOT / "data" / "site.json", {
-        "dates": sorted(history, reverse=True),
-        "weeks": sorted((f.stem for f in (ROOT / "weekly").glob("*.md")), reverse=True),
-        "titles": {k: [c["name"] for c in v["concepts"]] for k, v in history.items()},
-    })
+    save_json(ROOT / "data" / "site.json", site_data(history, dates, solved, today, cur_streak))
 
     readme = ROOT / "README.md"
     readme.write_text(replace_block(readme.read_text(encoding="utf-8"),

@@ -61,7 +61,10 @@ def fetch_news(keywords, per_keyword=20):
     items = []
     for kw in keywords:
         q = urllib.parse.urlencode({"query": kw, "display": per_keyword, "sort": "date"})
-        items += get_json(f"https://openapi.naver.com/v1/search/news.json?{q}", headers)["items"]
+        try:
+            items += get_json(f"https://openapi.naver.com/v1/search/news.json?{q}", headers)["items"]
+        except Exception as e:  # 검색어 하나가 실패해도 나머지로 진행. 전부 실패하면 main에서 멈춘다
+            print(f"뉴스 검색 실패 ({kw}): {e}", file=sys.stderr)
     return dedupe(items)
 
 
@@ -81,42 +84,56 @@ def curriculum_concept(day):
     return cur[(day - date.fromisoformat(CONFIG["start_date"])).days % len(cur)]
 
 
-def analyze(news, concept, tags):
+def recent_concepts(history, today, days=30):
+    return list(dict.fromkeys(c["name"] for k, v in sorted(history.items())
+                              if today - timedelta(days=days) <= date.fromisoformat(k) < today for c in v["concepts"]))
+
+
+def analyze(news, concept, tags, recent):
     """LLM은 뉴스 '번호'와 정해진 태그 목록 안에서만 고른다. 링크·문제번호를 지어낼 수 없게."""
     import anthropic
 
     schema = {
         "type": "object",
         "additionalProperties": False,
-        "required": ["news", "concepts", "tag", "trending_keywords"],
+        "required": ["news", "concepts", "tag", "trending_keywords", "quiz"],
         "properties": {
             "news": {"type": "array", "items": {
                 "type": "object", "additionalProperties": False, "required": ["index", "one_line"],
                 "properties": {"index": {"type": "integer"}, "one_line": {"type": "string"}}}},
             "concepts": {"type": "array", "items": {
                 "type": "object", "additionalProperties": False,
-                "required": ["name", "subject", "from_news", "news_index", "explanation", "interview_question"],
+                "required": ["name", "subject", "from_news", "news_index", "explanation", "interview_question", "related"],
                 "properties": {
                     "name": {"type": "string"}, "subject": {"type": "string"},
                     "from_news": {"type": "boolean"}, "news_index": {"type": "integer"},
-                    "explanation": {"type": "string"}, "interview_question": {"type": "string"}}}},
+                    "explanation": {"type": "string"}, "interview_question": {"type": "string"},
+                    "related": {"type": "array", "items": {"type": "string"}}}}},
             "tag": {"type": "string", "enum": tags + ["none"]},
             "trending_keywords": {"type": "array", "items": {"type": "string"}},
+            "quiz": {"type": "array", "items": {
+                "type": "object", "additionalProperties": False, "required": ["question", "answer", "why"],
+                "properties": {"question": {"type": "string"}, "answer": {"type": "string"}, "why": {"type": "string"}}}},
         },
     }
     news_text = "\n".join(f"[{i}] {n['title']} — {n['desc']}" for i, n in enumerate(news))
+    recent_text = ", ".join(recent) if recent else "(없음)"
     prompt = f"""너는 취업 준비 중인 백엔드 개발자의 CS 공부 코치다. 아래는 오늘 수집한 IT 뉴스 목록이다.
 
 {news_text}
+
+최근 30일 동안 이미 공부한 개념: {recent_text}
 
 다음을 한국어로 만들어라.
 1. news: 개발자가 볼 만한 핫한 뉴스 5개. index는 위 목록 번호, one_line은 왜 중요한지 한 줄.
 2. concepts: 정확히 2개.
    - 첫째는 오늘의 커리큘럼 개념 "{concept['name']}" (subject "{concept['subject']}", from_news false). 관련 뉴스가 있으면 news_index에 번호, 없으면 -1.
-   - 둘째는 뉴스에서 뽑은 공부할 만한 CS 개념 (from_news true, news_index는 근거 뉴스 번호).
+   - 둘째는 뉴스에서 뽑은 공부할 만한 CS 개념 (from_news true, news_index는 근거 뉴스 번호). 최근 공부한 개념과 겹치지 않게.
    - explanation은 핵심 3줄(줄바꿈 구분), interview_question은 실제 면접에서 나올 질문 1개.
+   - related는 '최근 공부한 개념' 목록에 있는 이름 중 이 개념과 직접 관련된 것만 그대로 적는다 (최대 3개, 없으면 빈 배열).
 3. tag: 두 개념 중 하나와 '자연스럽게' 이어지는 solved.ac 알고리즘 태그. 억지로 연결해야 하면 "none".
 4. trending_keywords: 여러 뉴스에 반복해서 나온 기술 용어 최대 3개 (예: "MCP", "HBM"). 한 단어 위주로 짧게.
+5. quiz: 오늘 두 개념으로 확인 문제 3개. 한 줄 단답이나 O/X로 답할 수 있게. why는 정답 이유 한 줄.
 """
     client = anthropic.Anthropic()
     resp = client.beta.messages.create(
@@ -235,6 +252,10 @@ def render_daily(day, news, result, problem, pending, reviews, cur_streak):
         lines += ["**🔁 복습할 개념**", ""]
         lines += [f"- {off}일 전 ([{d}]({d}.md)): {', '.join(names)}" for off, d, names in reviews]
         lines.append("")
+    if result.get("quiz"):
+        lines += ["**🧠 확인 퀴즈**", ""]
+        for i, q in enumerate(result["quiz"], 1):
+            lines += [f"{i}. {q['question']}", f"<details><summary>정답</summary>{q['answer']} — {q['why']}</details>", ""]
     lines += ["## ② 오늘의 문제", "", problem_line(problem), ""]
     if pending:
         lines += [f"**밀린 문제 {len(pending)}개**", ""] + [f"- {d}: {boj(p)}" for d, p in pending] + [""]
@@ -248,9 +269,45 @@ def render_daily(day, news, result, problem, pending, reviews, cur_streak):
     return "\n".join(lines)
 
 
+def render_graph(history, limit=60):
+    """최근 개념 limit개를 과목별로 묶고, LLM이 고른 관련 개념끼리 잇는 Mermaid 그래프."""
+    entries = [(c["name"], c["subject"], c.get("related", [])) for _, v in sorted(history.items()) for c in v["concepts"]]
+    names = list(dict.fromkeys(n for n, _, _ in entries))[-limit:]
+    ids = {n: f"n{i}" for i, n in enumerate(names)}
+    subject = {n: s for n, s, _ in entries}
+    edges = sorted({tuple(sorted((n, r))) for n, _, rel in entries for r in rel if n in ids and r in ids and r != n})
+    lines = ["```mermaid", "graph LR"]
+    for si, s in enumerate(sorted({subject[n] for n in names})):
+        lines.append(f'  subgraph s{si} ["{s.replace(chr(34), chr(39))}"]')
+        lines += [f'    {ids[n]}["{n.replace(chr(34), chr(39))}"]' for n in names if subject[n] == s]
+        lines.append("  end")
+    lines += [f"  {ids[a]} --- {ids[b]}" for a, b in edges]
+    lines.append("```")
+    return "\n".join(lines)
+
+
+def render_heatmap(history, dates, solved, today, weeks=20):
+    """노트를 쓴 날 +1, 그날 추천 문제를 푼 날 +1. GitHub 잔디처럼 월요일부터 세로로 7칸."""
+    start = today - timedelta(days=today.weekday() + 7 * (weeks - 1))
+    colors = ["#ebedf0", "#9be9a8", "#30a14e"]
+    cells = []
+    for i in range((today - start).days + 1):
+        d = start + timedelta(days=i)
+        p = history.get(str(d), {}).get("problem")
+        level = (d in dates) + bool(p and p["id"] in solved)
+        cells.append(f'<rect x="{i // 7 * 14}" y="{i % 7 * 14 + 4}" width="11" height="11" rx="2" fill="{colors[level]}"><title>{d}</title></rect>')
+    w = weeks * 14
+    legend = "".join(f'<rect x="{w - 70 + j * 14}" y="108" width="11" height="11" rx="2" fill="{c}"/>' for j, c in enumerate(colors))
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="124" font-family="sans-serif" font-size="10">'
+            f'<rect width="100%" height="100%" fill="#ffffff"/>{"".join(cells)}{legend}'
+            f'<text x="{w - 74}" y="117" fill="#57606a" text-anchor="end">적음</text>'
+            f'<text x="{w - 28}" y="117" fill="#57606a">많음</text></svg>\n')
+
+
 def render_archive(history):
     counts = Counter(c["name"] for v in history.values() for c in v["concepts"])
     lines = ["# 개념 아카이브", "", f"지금까지 공부한 개념 {len(counts)}개 (×N은 다시 나온 횟수)", "",
+             "## 개념 연결 그래프", "", render_graph(history), "", "## 전체 목록", "",
              "| 날짜 | 개념 | 과목 |", "|---|---|---|"]
     for d, v in sorted(history.items(), reverse=True):
         for c in v["concepts"]:
@@ -283,7 +340,8 @@ def render_weekly(history, solved, dates, today):
 
 def render_readme_block(day, problem, cur_streak, counts, total_notes):
     lines = [f"**오늘 ({day})** → [daily/{day}.md](daily/{day}.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)", "",
-             problem_line(problem), "", f"🔥 연속 {cur_streak}일 · 📝 누적 노트 {total_notes}개", ""]
+             problem_line(problem), "", f"🔥 연속 {cur_streak}일 · 📝 누적 노트 {total_notes}개", "",
+             "![공부 잔디](assets/heatmap.svg)", ""]
     if counts:
         top = max(counts.values())
         lines += ["| 과목 | 학습량 |", "|---|---|"]
@@ -322,7 +380,9 @@ def main():
     news = fetch_news(base + [k for k in dynamic if k not in base])
     if not news:
         sys.exit("뉴스를 한 건도 가져오지 못했습니다")
-    result, usage = analyze(news[:150], curriculum_concept(today), CONFIG["tags"])
+    history = load_json(HISTORY_FILE, {})
+    recent = recent_concepts(history, today)
+    result, usage = analyze(news[:150], curriculum_concept(today), CONFIG["tags"], recent)
     dynamic = update_keywords(dynamic, result["trending_keywords"], today, base)
     save_json(KEYWORDS_FILE, dynamic)
 
@@ -332,9 +392,10 @@ def main():
         print(f"문제 추천 실패: {e}", file=sys.stderr)
         problem = None
 
-    history = load_json(HISTORY_FILE, {})
     history[str(today)] = {
-        "concepts": [{"name": c["name"], "subject": c["subject"]} for c in result["concepts"]],
+        "concepts": [{"name": c["name"], "subject": c["subject"],
+                      "related": [r for r in c["related"] if r in recent]}  # 목록 밖 이름은 버린다
+                     for c in result["concepts"]],
         "problem": problem,
         "keywords_added": [k for k in result["trending_keywords"] if k.strip() in dynamic],
         "usage": usage,
@@ -348,6 +409,8 @@ def main():
         render_daily(today, news, result, problem, pending_problems(history, solved, today),
                      review_concepts(history, today), cur_streak), encoding="utf-8")
     (ROOT / "concepts.md").write_text(render_archive(history), encoding="utf-8")
+    (ROOT / "assets").mkdir(exist_ok=True)
+    (ROOT / "assets" / "heatmap.svg").write_text(render_heatmap(history, dates, solved, today), encoding="utf-8")
     if today.weekday() == 0:  # 월요일 아침에 지난주 리포트
         title, text = render_weekly(history, solved, dates, today)
         (ROOT / "weekly").mkdir(exist_ok=True)

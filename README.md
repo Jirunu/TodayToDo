@@ -25,6 +25,18 @@
 3. 오늘의 문제를 풀고 `solutions/BOJ_번호.확장자`로 커밋합니다.
 
 자동 커밋은 봇 계정이라 잔디에 잡히지 않습니다. 잔디는 내가 직접 한 공부 커밋으로만 채워집니다.
+로컬에서 커밋하기 전에 `git pull`로 봇이 만든 파일을 먼저 받아 오세요.
+
+## 자동으로 쌓이는 것
+
+| 기능 | 내용 |
+|---|---|
+| 문제 추천 | 오늘 개념과 이어지는 태그 → 없으면 solved.ac 기준 내가 가장 적게 푼 태그 |
+| 검색어 자동 확장 | 뉴스에 반복해서 나온 용어를 다음 날 검색어에 추가, 7일간 안 나오면 제외 (`data/keywords.json`) |
+| 복습 | 1일, 7일, 30일 전에 공부한 개념을 오늘 페이지에 다시 표시 |
+| 개념 아카이브 | 지금까지 나온 개념 전체와 반복 횟수 ([concepts.md](concepts.md)) |
+| 주간 리포트 | 월요일 아침에 지난주 노트·풀이·키워드·LLM 토큰 사용량 정리 (`weekly/`) |
+| 디스코드 알림 | `DISCORD_WEBHOOK_URL` Secret이 있으면 아침마다 요약 전송 |
 
 ## 설정
 
@@ -34,6 +46,8 @@
 | solved.ac 아이디, 난이도 | `config.json`의 `solvedac_handle`, `tier` |
 | CS 커리큘럼 | `config.json`의 `curriculum` |
 | API 키 | 저장소 Settings → Secrets: `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`, `ANTHROPIC_API_KEY` |
+| 디스코드 알림 (선택) | Secrets: `DISCORD_WEBHOOK_URL` |
+| 웹 페이지 (선택) | Settings → Pages → Branch `main` / `(root)` 선택. 이 README와 `daily/`가 그대로 웹 페이지가 됩니다 |
 
 ## 데이터 원칙
 

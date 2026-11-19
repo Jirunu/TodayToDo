@@ -416,6 +416,13 @@ def main():
         (ROOT / "weekly").mkdir(exist_ok=True)
         (ROOT / "weekly" / f"{title}.md").write_text(text, encoding="utf-8")
 
+    # github.io 페이지(index.html)가 읽는 목차
+    save_json(ROOT / "data" / "site.json", {
+        "dates": sorted(history, reverse=True),
+        "weeks": sorted((f.stem for f in (ROOT / "weekly").glob("*.md")), reverse=True),
+        "titles": {k: [c["name"] for c in v["concepts"]] for k, v in history.items()},
+    })
+
     readme = ROOT / "README.md"
     readme.write_text(replace_block(readme.read_text(encoding="utf-8"),
                                     render_readme_block(today, problem, cur_streak, subject_counts(), len(dates))), encoding="utf-8")

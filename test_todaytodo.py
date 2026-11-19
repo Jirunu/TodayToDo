@@ -163,6 +163,8 @@ try:
     assert saved == ["어제 개념"]  # LLM이 지어낸 이름은 버림
     assert "```mermaid" in (tmp / "concepts.md").read_text(encoding="utf-8")
     assert (tmp / "assets" / "heatmap.svg").read_text(encoding="utf-8").startswith("<svg")
+    site = t.load_json(tmp / "data" / "site.json", {})
+    assert site["dates"] == [str(today), yesterday] and site["titles"][yesterday] == ["어제 개념"] and site["weeks"] == sorted(site["weeks"], reverse=True)
     readme = (tmp / "README.md").read_text(encoding="utf-8")
     assert "아직 첫 실행 전" not in readme and "| 운영체제 |" in readme and "## 설정" in readme
     assert json.loads(t.HISTORY_FILE.read_text(encoding="utf-8"))[str(today)]["problem"]["id"] == 1920

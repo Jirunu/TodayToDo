@@ -1,5 +1,7 @@
 # TodayToDo
 
+🌐 **https://jirunu.github.io/TodayToDo/**
+
 매일 IT 뉴스에서 공부할 CS 개념을 뽑고, 그 개념과 이어지는 백준 문제를 추천받아 **1일 1CS · 1일 1솔 · 1일 1커밋**을 하는 저장소입니다.
 
 ```
@@ -50,7 +52,7 @@
 | CS 커리큘럼 | `config.json`의 `curriculum` |
 | API 키 | 저장소 Settings → Secrets: `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`, `ANTHROPIC_API_KEY` |
 | 디스코드 알림 (선택) | Secrets: `DISCORD_WEBHOOK_URL` |
-| 웹 페이지 (선택) | Settings → Pages → Branch `main` / `(root)` 선택. 이 README와 `daily/`가 그대로 웹 페이지가 됩니다 |
+| 웹 페이지 | Settings → Pages → Source `Deploy from a branch`, Branch `main` / `(root)` → https://jirunu.github.io/TodayToDo/ |
 
 ## 데이터 원칙
 

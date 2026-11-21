@@ -6,7 +6,7 @@
 ![python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![claude](https://img.shields.io/badge/LLM-Claude%20API-D97757)
 
-🌐 **https://jirunu.github.io/TodayToDo/**
+🌐 **https://jirunu.github.io/TodayToDo/** · ▲ **https://today-to-do-phi.vercel.app**
 
 매일 기술 뉴스에서 공부할 CS 개념을 뽑고, 그 개념과 이어지는 백준 문제를 추천받아 **1일 1CS · 1일 1솔 · 1일 1커밋**을 하는 저장소입니다.
 

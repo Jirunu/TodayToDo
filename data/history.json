@@ -1,0 +1,19 @@
+{
+  "2026-11-21": {
+    "concepts": [
+      {
+        "name": "스택과 큐",
+        "subject": "자료구조",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 2257,
+      "title": "화학식량",
+      "tag": "stack",
+      "reason": "linked"
+    },
+    "keywords_added": [],
+    "usage": {}
+  }
+}

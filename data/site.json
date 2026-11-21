@@ -1,0 +1,31 @@
+{
+  "updated": "2026-11-21",
+  "repo": "Jirunu/TodayToDo",
+  "field": "backend",
+  "stats": {
+    "streak": 0,
+    "notes": 0,
+    "solved": 0,
+    "concepts": 1
+  },
+  "notes": [],
+  "solved": [],
+  "weeks": [],
+  "history": {
+    "2026-11-21": {
+      "concepts": [
+        {
+          "name": "스택과 큐",
+          "subject": "자료구조"
+        }
+      ],
+      "problem": {
+        "id": 2257,
+        "title": "화학식량",
+        "tag": "stack",
+        "reason": "linked"
+      }
+    }
+  },
+  "graph": "graph LR\n  subgraph s0 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n  end"
+}

@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-21",
+  "streak": 0,
+  "concepts": [
+    {
+      "name": "스택과 큐",
+      "subject": "자료구조",
+      "from_news": false,
+      "explanation": [
+        "스택은 나중에 넣은 것이 먼저 나오는 LIFO 구조로, 함수 호출 스택·괄호 검사·되돌리기에 쓰인다",
+        "큐는 먼저 넣은 것이 먼저 나오는 FIFO 구조로, BFS·작업 대기열·버퍼에 쓰인다",
+        "덱(Deque)은 양쪽 끝에서 넣고 뺄 수 있어 스택과 큐를 모두 대신할 수 있다"
+      ],
+      "interview_question": "스택 두 개로 큐를 구현하는 방법을 설명해 보세요.",
+      "news": null
+    }
+  ],
+  "quiz": [
+    {
+      "question": "BFS에 사용하는 자료구조는?",
+      "answer": "큐",
+      "why": "가까운 정점부터 순서대로 꺼내야 하므로 FIFO가 필요"
+    }
+  ],
+  "reviews": [],
+  "problem": {
+    "id": 2257,
+    "title": "화학식량",
+    "tag": "stack",
+    "reason": "linked"
+  },
+  "pending": [],
+  "news": [
+    {
+      "title": "Codex로 일하는 새로운 방식 [영상]",
+      "link": "https://news.hada.io/topic?id=37556",
+      "source": "GeekNews",
+      "one_line": "Codex 하네스 가 CLI, 데스크톱 앱, ChatGPT, Slack, Dots, Agents API로 확장되며, 로컬 코딩뿐 아니라 클라우드 장기 작업과 여러 업무 도구를 연결하는 기반으로 쓰임 코드 작성뿐 아니"
+    },
+    {
+      "title": "FBI reportedly investigating apparent hack of its criminal database",
+      "link": "https://www.bbc.com/news/articles/cvze7de86pk3o",
+      "source": "Hacker News",
+      "one_line": "Hacker News 72점 · 댓글 33개"
+    },
+    {
+      "title": "Cloudflare가 Raft 대신 QuePaxa를 선택한 이유",
+      "link": "https://news.hada.io/topic?id=37555",
+      "source": "GeekNews",
+      "one_line": "Cloudflare는 전 세계에 분산된 실험적 제어 평면 서비스 Meerkat 에 QuePaxa를 채택함. 인터넷의 지연 급증과 연결 장애에도 단일 리더에 의존하지 않고 합의를 이어가는 것이 핵심 요구사항임 Raft"
+    },
+    {
+      "title": "Derek Lowe: Detonating a Pile of Lead Azide",
+      "link": "https://www.science.org/content/blog-post/detonating-huge-pile-lead-azide-really",
+      "source": "Hacker News",
+      "one_line": "Hacker News 59점 · 댓글 14개"
+    },
+    {
+      "title": "OpenAI, 내부 연구 모델이 DNS 설정 오류로 인터넷에 접근해 최상위 모델 학습을 11일간 중단",
+      "link": "https://news.hada.io/topic?id=37575",
+      "source": "GeekNews",
+      "one_line": "OpenAI가 모델 학습, 내부 배포, 외부 배포 단계마다 거치는 안전 게이트를 설명한 글 감시 시스템이 내부 연구 모델이 DNS 설정 오류를 이용해 제한적으로 인터넷에 접근한 것을 탐지했고, 이 일로 9월 20일부"
+    }
+  ],
+  "mode": "basic"
+}

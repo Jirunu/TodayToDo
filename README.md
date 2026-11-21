@@ -1,5 +1,11 @@
 # TodayToDo
 
+[![daily](https://github.com/Jirunu/TodayToDo/actions/workflows/daily.yml/badge.svg)](https://github.com/Jirunu/TodayToDo/actions/workflows/daily.yml)
+[![test](https://github.com/Jirunu/TodayToDo/actions/workflows/test.yml/badge.svg)](https://github.com/Jirunu/TodayToDo/actions/workflows/test.yml)
+[![web](https://img.shields.io/badge/web-jirunu.github.io%2FTodayToDo-16a34a?logo=github)](https://jirunu.github.io/TodayToDo/)
+![python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![claude](https://img.shields.io/badge/LLM-Claude%20API-D97757)
+
 🌐 **https://jirunu.github.io/TodayToDo/**
 
 매일 기술 뉴스에서 공부할 CS 개념을 뽑고, 그 개념과 이어지는 백준 문제를 추천받아 **1일 1CS · 1일 1솔 · 1일 1커밋**을 하는 저장소입니다.
@@ -63,6 +69,20 @@
 | API 키 | 저장소 Settings → Secrets: `ANTHROPIC_API_KEY` |
 | 디스코드 알림 (선택) | Secrets: `DISCORD_WEBHOOK_URL` |
 | 웹 페이지 | Settings → Pages → Source `Deploy from a branch`, Branch `main` / `(root)` |
+
+## 개발
+
+```bash
+python test_todaytodo.py   # 외부 호출 없이 도는 자가 점검 (push 때 Actions에서도 자동 실행)
+```
+
+| 파일 | 역할 |
+|---|---|
+| `todaytodo.py` | 매일 실행되는 스크립트: 뉴스 수집 → 개념·퀴즈 생성 → 문제 추천 → 파일 생성 |
+| `index.html` | github.io 웹 페이지 (빌드 없이 `data/*.json`을 읽어 그림) |
+| `config.json` | 관심 분야, 커리큘럼, solved.ac 설정 |
+| `.github/workflows/daily.yml` | 매일 07:00 KST 실행 |
+| `.github/workflows/test.yml` | 코드가 바뀔 때 자가 점검 |
 
 ## 데이터 원칙
 

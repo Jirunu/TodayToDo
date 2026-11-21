@@ -11,6 +11,10 @@
 <meta property="og:title" content="TodayToDo · 1일 1CS 1일 1솔">
 <meta property="og:description" content="매일 기술 뉴스에서 CS 개념을 뽑고 백준 문제로 연결하는 공부 기록">
 <meta property="og:locale" content="ko_KR">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TodayToDo">
 <!-- github.io가 아닌 곳(Vercel 등)에서 첫 실행 전에도 GitHub 링크를 만들기 위한 저장소 이름 -->
 <meta name="repo" content="Jirunu/TodayToDo">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%2316a34a'/%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -751,6 +755,8 @@ async function route() {
     h("span", {}, "뉴스 출처: ", ext("https://news.hada.io", {}, "GeekNews"), " · ", ext("https://news.ycombinator.com", {}, "Hacker News")));
   addEventListener("hashchange", route);
   route();
+  // 홈 화면에 설치해서 앱처럼 쓰기 + 오프라인에서도 마지막 기록 보기
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
 </script>
 </body>

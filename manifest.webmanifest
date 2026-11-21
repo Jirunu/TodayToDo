@@ -1,0 +1,20 @@
+{
+  "name": "TodayToDo · 1일 1CS 1일 1솔",
+  "short_name": "TodayToDo",
+  "description": "매일 기술 뉴스에서 CS 개념을 뽑고 백준 문제로 연결하는 공부 기록",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#16a34a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "지난 기록", "url": "./#/days" },
+    { "name": "개념", "url": "./#/concepts" }
+  ]
+}

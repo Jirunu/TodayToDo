@@ -1,0 +1,5 @@
+# 웹 페이지에 필요 없는 파일은 배포하지 않는다 (저장소에는 그대로 남음)
+*.py
+requirements.txt
+.github
+__pycache__

@@ -68,7 +68,8 @@
 | CS 커리큘럼 | `config.json`의 `curriculum` |
 | API 키 | 저장소 Settings → Secrets: `ANTHROPIC_API_KEY` |
 | 디스코드 알림 (선택) | Secrets: `DISCORD_WEBHOOK_URL` |
-| 웹 페이지 | Settings → Pages → Source `Deploy from a branch`, Branch `main` / `(root)` |
+| 웹 페이지 (GitHub Pages) | Settings → Pages → Source `Deploy from a branch`, Branch `main` / `(root)` |
+| 웹 페이지 (Vercel) | [vercel.com/new](https://vercel.com/new)에서 이 저장소를 Import → Framework `Other` 그대로 Deploy. 설정은 `vercel.json`에 있고, 봇이 매일 커밋하면 자동으로 다시 배포됩니다 |
 
 ## 개발
 

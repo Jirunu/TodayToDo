@@ -22,7 +22,7 @@
     --accent: #16a34a; --accent-strong: #15803d; --accent-soft: #e7f7ec; --on-accent: #ffffff;
     --hn: #e8590c; --hn-soft: #fff1e8; --gn: #4c6ef5; --gn-soft: #edf1ff;
     --warn: #b45309; --warn-soft: #fef3e2;
-    --heat-0: #ebedf0; --heat-1: #9be9a8; --heat-2: #30a14e;
+    --heat-0: #ebedf0; --heat-1: #9be9a8; --heat-2: #40c463; --heat-3: #30a14e; --heat-4: #216e39;
     --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 1px 3px rgba(16, 24, 40, .06);
     --radius: 14px;
     color-scheme: light;
@@ -34,7 +34,7 @@
       --accent: #22c55e; --accent-strong: #4ade80; --accent-soft: rgba(34, 197, 94, .12); --on-accent: #06210f;
       --hn: #ff8a3d; --hn-soft: rgba(255, 138, 61, .12); --gn: #7c93ff; --gn-soft: rgba(124, 147, 255, .13);
       --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, .1);
-      --heat-0: #1f242c; --heat-1: #0e4429; --heat-2: #26a641;
+      --heat-0: #1f242c; --heat-1: #0e4429; --heat-2: #006d32; --heat-3: #26a641; --heat-4: #39d353;
       --shadow: none; color-scheme: dark;
     }
   }
@@ -44,7 +44,7 @@
     --accent: #22c55e; --accent-strong: #4ade80; --accent-soft: rgba(34, 197, 94, .12); --on-accent: #06210f;
     --hn: #ff8a3d; --hn-soft: rgba(255, 138, 61, .12); --gn: #7c93ff; --gn-soft: rgba(124, 147, 255, .13);
     --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, .1);
-    --heat-0: #1f242c; --heat-1: #0e4429; --heat-2: #26a641;
+    --heat-0: #1f242c; --heat-1: #0e4429; --heat-2: #006d32; --heat-3: #26a641; --heat-4: #39d353;
     --shadow: none; color-scheme: dark;
   }
 
@@ -140,6 +140,12 @@
   .heat .cell { border-radius: 3px; background: var(--heat-0); }
   .heat .cell.l1 { background: var(--heat-1); }
   .heat .cell.l2 { background: var(--heat-2); }
+  .heat .cell.l3 { background: var(--heat-3); }
+  .heat .cell.l4 { background: var(--heat-4); }
+  .heat .cell.study { position: relative; }
+  .heat .cell.study::after { content: ""; position: absolute; inset: 3.5px; border-radius: 50%; background: var(--surface); }
+  .legend-dot { width: 11px; height: 11px; border-radius: 3px; background: var(--heat-2); position: relative; margin-left: 10px; display: inline-block; }
+  .legend-dot::after { content: ""; position: absolute; inset: 3.5px; border-radius: 50%; background: var(--surface); }
   .heat .cell.today { outline: 1.5px solid var(--text-2); outline-offset: 1px; }
   .heat .month { font-size: 11px; color: var(--muted); line-height: 16px; white-space: nowrap; overflow: visible; }
   .heat .cell.future { background: transparent; }
@@ -413,13 +419,30 @@ document.getElementById("theme").addEventListener("click", () => {
 paintThemeButton();
 
 /* ---------- 잔디 ---------- */
-function heatmap(endDate) {
+// GitHub 잔디: 공개 기여 API(CORS 허용). 실패하면 공부 기록만으로 그린다
+let contributions;
+async function loadContributions() {
+  if (contributions !== undefined) return contributions;
+  const login = repo().split("/")[0];
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch(`https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(login)}?y=last`, { signal: ctrl.signal });
+    const data = await r.json();
+    contributions = Object.fromEntries(data.contributions.filter(c => c.count).map(c => [c.date, c]));
+  } catch { contributions = null; }
+  return contributions;
+}
+
+async function heatmap() {
   // 카드 폭을 채우는 주 수 (칸 12px + 간격 3px), 최대 1년
   const weeks = Math.max(12, Math.min(53, Math.floor((Math.min(1040, innerWidth) - 90) / 15)));
   const notes = new Set(site.notes), solved = new Set(site.solved);
+  const contrib = await loadContributions();
+  const endDate = fmt(new Date());
   const end = parseDate(endDate);
   const start = new Date(end); start.setDate(end.getDate() - ((end.getDay() + 6) % 7) - 7 * (weeks - 1));
-  const grid = h("div", { class: "heat", role: "img", "aria-label": `최근 ${weeks}주 공부 기록` });
+  const grid = h("div", { class: "heat", role: "img", "aria-label": `최근 ${weeks}주 잔디` });
   const weekStart = w => { const d = new Date(start); d.setDate(start.getDate() + w * 7); return d; };
   // 달이 바뀌는 주에 라벨. 다음 라벨과 3칸 안으로 붙으면 앞의 것은 생략
   const marks = [...Array(weeks).keys()].filter(w => w === 0 || weekStart(w).getMonth() !== weekStart(w - 1).getMonth());
@@ -432,17 +455,27 @@ function heatmap(endDate) {
       const key = fmt(d);
       if (d > end) { grid.append(h("div", { class: "cell future" })); continue; }
       const p = site.history[key]?.problem;
-      const level = (notes.has(key) ? 1 : 0) + (p && solved.has(p.id) ? 1 : 0);
-      const label = `${key} · ${level === 2 ? "노트 + 풀이" : level === 1 ? (notes.has(key) ? "노트" : "풀이") : "기록 없음"}`;
-      grid.append(h("div", { class: `cell l${level}${key === endDate ? " today" : ""}`, title: label }));
+      const note = notes.has(key), solve = !!(p && solved.has(p.id));
+      const commits = contrib?.[key]?.count || 0;
+      // 색은 GitHub 기여 단계(0~4), 노트·풀이를 한 날은 점으로 표시. API가 안 되면 공부 기록으로 색칠
+      const level = contrib ? (contrib[key]?.level || 0) : (note ? 2 : 0) + (solve ? 2 : 0);
+      const parts = [key, contrib ? `커밋 ${commits}개` : null, note ? "노트 ✓" : null, solve ? "풀이 ✓" : null];
+      grid.append(h("div", {
+        class: `cell l${Math.min(level, 4)}${note || solve ? " study" : ""}${key === endDate ? " today" : ""}`,
+        title: parts.filter(Boolean).join(" · "),
+      }));
     }
   }
   const scroll = h("div", { class: "heat-scroll" }, grid);
   requestAnimationFrame(() => { scroll.scrollLeft = scroll.scrollWidth; });
+  const total = contrib ? Object.values(contrib).reduce((s, c) => s + c.count, 0) : null;
   return h("div", { class: "card heat-card" },
     h("div", { class: "heat-top" },
-      h("b", {}, "공부 잔디"),
-      h("div", { class: "legend" }, "적음", ...[0, 1, 2].map(l => h("i", { style: `background:var(--heat-${l})` })), "많음")),
+      h("div", {}, h("b", {}, "잔디"),
+        h("span", { class: "muted", style: "font-size:13px;margin-left:8px" },
+          total != null ? `최근 1년 GitHub 기여 ${total}회` : "공부 기록")),
+      h("div", { class: "legend" }, "적음", ...[0, 1, 2, 3, 4].map(l => h("i", { style: `background:var(--heat-${l})` })), "많음",
+        h("span", { class: "legend-dot" }), "공부")),
     scroll);
 }
 
@@ -452,7 +485,7 @@ function stats() {
   const tile = (label, value, unit) => h("div", { class: "card stat" },
     h("div", { class: "label" }, label), h("div", { class: "value" }, String(value), h("small", {}, unit)));
   return h("div", { class: "stats" },
-    tile("🔥 연속 기록", s.streak, "일"), tile("📝 누적 노트", s.notes, "개"),
+    tile("🔥 연속 공부", s.streak, "일"), tile("📝 누적 노트", s.notes, "개"),
     tile("✅ 푼 추천 문제", s.solved, "문제"), tile("📚 공부한 개념", s.concepts, "개"));
 }
 
@@ -542,7 +575,7 @@ async function dayView(date) {
         h("a", { class: "btn", href: prev ? `#/day/${prev}` : null, "aria-disabled": !prev, style: prev ? null : "opacity:.4;pointer-events:none", "aria-label": "이전 날" }, icon("left")),
         h("a", { class: "btn", href: next ? `#/day/${next}` : null, "aria-disabled": !next, style: next ? null : "opacity:.4;pointer-events:none", "aria-label": "다음 날" }, icon("right")))),
     isLatest && stats(),
-    isLatest && heatmap(site.updated),
+    isLatest && await heatmap(),
     section("1", "오늘의 CS", d.mode === "basic" ? "오늘의 커리큘럼" : "커리큘럼 1개 + 뉴스에서 1개",
       h("div", { class: "grid-2" }, d.concepts.map(conceptCard)),
       d.mode === "basic" && isLatest ? h("p", { class: "basic-note" },

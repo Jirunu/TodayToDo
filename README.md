@@ -13,7 +13,7 @@
 ```
 ③ News   GeekNews · Hacker News에서 오늘의 기술 뉴스 수집, 관심 분야 키워드로 정렬
    ↓
-① CS     오늘의 커리큘럼 개념 + 뉴스에서 뽑은 개념 + 확인 퀴즈 (Claude API)
+① CS     오늘의 커리큘럼 개념(내장 60개) + 뉴스에서 뽑은 개념·퀴즈 (Claude API, 키가 있을 때)
    ↓
 ② Coding 개념과 이어지는 solved.ac 태그 → 내 수준의 안 푼 문제
    ↓
@@ -65,8 +65,8 @@
 |---|---|
 | 관심 분야와 키워드 | `config.json`의 `field` (`backend`, `ai`, `security`, `frontend`)와 `fields` |
 | solved.ac 아이디, 난이도 | `config.json`의 `solvedac_handle`, `tier` |
-| CS 커리큘럼 | `config.json`의 `curriculum` |
-| API 키 | 저장소 Settings → Secrets: `ANTHROPIC_API_KEY` |
+| CS 커리큘럼 | `curriculum.json` (개념마다 핵심 3줄, 면접 질문, 퀴즈, 연결 태그) |
+| API 키 (선택) | 저장소 Settings → Secrets: `ANTHROPIC_API_KEY`. 없으면 **기본 모드**로 내장 커리큘럼·관심 분야 뉴스·문제 추천만 하고, 있으면 그날 뉴스에서 뽑은 개념과 퀴즈가 더해집니다 |
 | 디스코드 알림 (선택) | Secrets: `DISCORD_WEBHOOK_URL` |
 | 웹 페이지 (GitHub Pages) | Settings → Pages → Source `Deploy from a branch`, Branch `main` / `(root)` |
 | 웹 페이지 (Vercel) | [vercel.com/new](https://vercel.com/new)에서 이 저장소를 Import → Framework `Other` 그대로 Deploy. 설정은 `vercel.json`에 있고, 봇이 매일 커밋하면 자동으로 다시 배포됩니다 |
@@ -81,7 +81,8 @@ python test_todaytodo.py   # 외부 호출 없이 도는 자가 점검 (push 때
 |---|---|
 | `todaytodo.py` | 매일 실행되는 스크립트: 뉴스 수집 → 개념·퀴즈 생성 → 문제 추천 → 파일 생성 |
 | `index.html` | github.io 웹 페이지 (빌드 없이 `data/*.json`을 읽어 그림) |
-| `config.json` | 관심 분야, 커리큘럼, solved.ac 설정 |
+| `config.json` | 관심 분야, solved.ac 설정 |
+| `curriculum.json` | 매일 하나씩 도는 CS 커리큘럼 60개 |
 | `.github/workflows/daily.yml` | 매일 07:00 KST 실행 |
 | `.github/workflows/test.yml` | 코드가 바뀔 때 자가 점검 |
 

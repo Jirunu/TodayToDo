@@ -171,6 +171,8 @@
   .quiz .answer { padding: 0 20px 16px 60px; color: var(--text-2); }
   .quiz .answer b { color: var(--accent-strong); margin-right: 6px; }
 
+  .basic-note { margin: 12px 2px 0; font-size: 13.5px; color: var(--muted); }
+  .basic-note a { color: var(--accent-strong); font-weight: 600; }
   .reviews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
   .reviews a { text-decoration: none; }
   .reviews a:hover .chip { background: var(--line); }
@@ -541,8 +543,12 @@ async function dayView(date) {
         h("a", { class: "btn", href: next ? `#/day/${next}` : null, "aria-disabled": !next, style: next ? null : "opacity:.4;pointer-events:none", "aria-label": "다음 날" }, icon("right")))),
     isLatest && stats(),
     isLatest && heatmap(site.updated),
-    section("1", "오늘의 CS", "커리큘럼 1개 + 뉴스에서 1개",
+    section("1", "오늘의 CS", d.mode === "basic" ? "오늘의 커리큘럼" : "커리큘럼 1개 + 뉴스에서 1개",
       h("div", { class: "grid-2" }, d.concepts.map(conceptCard)),
+      d.mode === "basic" && isLatest ? h("p", { class: "basic-note" },
+        "기본 모드로 만든 기록이에요. ",
+        repo() ? ext(`https://github.com/${repo()}/settings/secrets/actions`, {}, "ANTHROPIC_API_KEY") : "ANTHROPIC_API_KEY",
+        "를 등록하면 그날 뉴스에서 뽑은 개념과 퀴즈가 더해집니다.") : null,
       d.reviews?.length ? h("div", { class: "reviews" }, h("span", { class: "muted", style: "font-size:13.5px;font-weight:600" }, "🔁 복습"),
         d.reviews.map(r => h("a", { href: `#/day/${r.date}` }, h("span", { class: "chip" }, `${r.offset}일 전 · ${r.names.join(", ")}`)))) : null,
       quiz(d.quiz)),

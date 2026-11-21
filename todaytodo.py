@@ -239,8 +239,18 @@ def weakest_tags(handle, tags):
     return sorted(random.sample(tags, len(tags)), key=lambda t: solved.get(t, 0))
 
 
+def solved_on_boj(handle, ids, chunk=40):
+    """추천했던 문제 중 백준에서 실제로 푼 것. solutions/에 파일을 안 올려도 풀었음으로 잡힌다."""
+    solved, ids = set(), sorted(set(ids))
+    for i in range(0, len(ids), chunk):
+        group = "|".join(f"id:{p}" for p in ids[i:i + chunk])
+        url = "https://solved.ac/api/v3/search/problem?" + urllib.parse.urlencode({"query": f"({group}) s@{handle}"})
+        solved |= {p["problemId"] for p in get_json(url).get("items", [])}
+    return solved
+
+
 def search_problem(tag, handle, tier):
-    query = f"#{tag} *{tier} s#500.." + (f" -@{handle}" if handle else "")
+    query = f"#{tag} *{tier} s#500.." + (f" -s@{handle}" if handle else "")
     url = "https://solved.ac/api/v3/search/problem?" + urllib.parse.urlencode({"query": query, "sort": "random"})
     items = get_json(url).get("items", [])
     return items[0] if items else None
@@ -549,6 +559,12 @@ def main():
     save_json(HISTORY_FILE, history)
 
     dates, solved = note_dates(), solved_ids()
+    if CONFIG["solvedac_handle"]:
+        recommended = [p["id"] for v in history.values() if (p := v.get("problem"))]
+        try:
+            solved |= solved_on_boj(CONFIG["solvedac_handle"], recommended)
+        except Exception as e:  # solved.ac가 안 되면 solutions/ 파일만으로 판단
+            print(f"solved.ac 풀이 기록 조회 실패: {e}", file=sys.stderr)
     cur_streak = streak(dates, today)
     data = daily_data(today, news, result, problem, pending_problems(history, solved, today),
                       review_concepts(history, today), cur_streak)

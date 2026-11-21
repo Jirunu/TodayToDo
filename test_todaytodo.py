@@ -1,6 +1,7 @@
 """네트워크 없이 도는 자가 점검: python test_todaytodo.py"""
 import json
 import os
+import urllib.parse
 import shutil
 import tempfile
 from datetime import date, datetime
@@ -113,12 +114,22 @@ def fake_api(url):
     return {"items": [] if "%23kmp" in url else [{"problemId": 1000, "titleKo": "A+B"}]}
 t.get_json = fake_api
 p = t.recommend_problem("none", "me", "s3..g4", ["dp", "bfs", "math", "kmp"])
-assert p == {"id": 1000, "title": "A+B", "tag": "bfs", "reason": "weak"} and "-%40me" in calls[0] and "%23kmp" in calls[0]
+assert p == {"id": 1000, "title": "A+B", "tag": "bfs", "reason": "weak"} and "-s%40me" in calls[0] and "%23kmp" in calls[0]
 calls.clear()
 p = t.recommend_problem("hashing", "", "s3..g4", ["dp"])
 assert p == {"id": 1000, "title": "A+B", "tag": "hashing", "reason": "linked"} and "%40" not in calls[0]
 t.get_json = lambda url: {"count": 0, "items": []}
 assert t.recommend_problem("hashing", "me", "s3..g4", ["dp"]) is None
+
+# 백준에서 푼 추천 문제: id를 묶어서 묻고, 많으면 나눠서 묻는다
+asked = []
+def fake_solved(url):
+    q = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)["query"][0]
+    asked.append(q)
+    return {"items": [{"problemId": p} for p in (1000, 2257) if f"id:{p}" in q]}
+t.get_json = fake_solved
+assert t.solved_on_boj("me", [2257, 1000, 4889, 1000], chunk=2) == {1000, 2257}
+assert asked == ["(id:1000|id:2257) s@me", "(id:4889) s@me"]
 
 # 알림: 웹훅이 없으면 아무것도 안 한다
 t.notify(d, {"concepts": []}, None)

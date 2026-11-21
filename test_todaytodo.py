@@ -18,6 +18,14 @@ atom = """<?xml version='1.0' encoding='UTF-8'?>
 gn = t.parse_geeknews(atom)
 assert gn == [{"title": "Redis 장애 & 복구", "desc": "캐시 서버", "link": "https://news.hada.io/topic?id=1", "source": "GeekNews"}]
 
+# 태그 사이 문장이 붙지 않게
+assert t.clean("<ul><li>첫 문장임</li><li>둘째 문장</li></ul>") == "첫 문장임 둘째 문장"
+
+# 기본 모드 뉴스: 출처를 번갈아 최대 5개
+mixed = [{"title": f"{s}{i}", "desc": "d", "link": f"{s}{i}", "source": s} for s in ("GeekNews", "Hacker News") for i in range(4)]
+assert [mixed[n["index"]]["title"] for n in t.basic_result(mixed, t.CONFIG["curriculum"][0])["news"]] == \
+    ["GeekNews0", "Hacker News0", "GeekNews1", "Hacker News1", "GeekNews2"]
+
 # Hacker News: 스토리만, 링크 없으면 HN 글 주소
 assert t.hn_story({"id": 7, "type": "story", "title": "Show HN: x &amp; y", "score": 10, "descendants": 3}) == {
     "title": "Show HN: x & y", "desc": "Hacker News 10점 · 댓글 3개", "link": "https://news.ycombinator.com/item?id=7", "source": "Hacker News"}
@@ -208,14 +216,43 @@ finally:
 
 print("all checks passed")
 
-# 설정 점검: 키가 없으면 원인을 적고 멈춘다
+# 커리큘럼: 모든 개념에 설명 3줄·면접 질문·퀴즈가 있고, 태그는 config 목록 안에서만
+for c in t.CONFIG["curriculum"]:
+    assert len(c["points"]) == 3 and c["question"] and set(c["quiz"]) == {"question", "answer", "why"}, c["name"]
+    assert c["tag"] == "none" or c["tag"] in t.CONFIG["tags"], c["name"]
+
+# 설정 점검: 분야 설정이 틀리면 멈추고, 키가 없으면 멈추지 않는다 (기본 모드)
 saved_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+t.check_setup()
+t.CONFIG["field"], real_field = "없는분야", t.CONFIG["field"]
 try:
     t.check_setup()
-    raise AssertionError("키가 없는데 통과함")
+    raise AssertionError("틀린 분야인데 통과함")
 except SystemExit as e:
-    assert "ANTHROPIC_API_KEY" in str(e)
+    assert "없는분야" in str(e)
 finally:
+    t.CONFIG["field"] = real_field
+
+# 기본 모드: 키 없이 main()이 내장 커리큘럼으로 하루를 채운다
+tmp = Path(tempfile.mkdtemp())
+try:
+    shutil.copy(Path(__file__).parent / "README.md", tmp / "README.md")
+    (tmp / "notes").mkdir()
+    (tmp / "solutions").mkdir()
+    t.ROOT, t.HISTORY_FILE, t.KEYWORDS_FILE = tmp, tmp / "data" / "history.json", tmp / "data" / "keywords.json"
+    t.analyze = lambda *a: (_ for _ in ()).throw(AssertionError("키가 없는데 LLM을 부름"))
+    picked = []
+    t.recommend_problem = lambda tag, h, tier, tags: (picked.append(tag), {"id": 1000, "title": "A+B", "tag": tag, "reason": "linked"})[1]
+    t.main()
+    today = datetime.now(t.KST).date()
+    concept = t.curriculum_concept(today)
+    dj = t.load_json(tmp / "data" / "daily" / f"{today}.json", {})
+    assert dj["mode"] == "basic" and dj["concepts"][0]["name"] == concept["name"]
+    assert dj["concepts"][0]["explanation"] == concept["points"] and dj["quiz"] == [concept["quiz"]]
+    assert picked == [concept["tag"]] and len(dj["news"]) == 1
+    assert t.load_json(t.HISTORY_FILE, {})[str(today)]["usage"] == {}
+finally:
+    shutil.rmtree(tmp)
     if saved_key is not None:
         os.environ["ANTHROPIC_API_KEY"] = saved_key
-print("setup check passed")
+print("basic mode passed")

@@ -11,11 +11,14 @@ import xml.etree.ElementTree as ET
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
+from itertools import zip_longest
 from pathlib import Path
 
 ROOT = Path(__file__).parent
 KST = timezone(timedelta(hours=9))
 CONFIG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
+# 개념마다 핵심 3줄·면접 질문·퀴즈·연결 태그가 들어 있어 API 키 없이도 하루를 채울 수 있다
+CONFIG["curriculum"] = json.loads((ROOT / "curriculum.json").read_text(encoding="utf-8"))
 HISTORY_FILE = ROOT / "data" / "history.json"
 KEYWORDS_FILE = ROOT / "data" / "keywords.json"
 MODEL = "claude-opus-5-5"
@@ -40,7 +43,8 @@ def save_json(path, data):
 
 
 def clean(s):
-    return html.unescape(re.sub(r"<[^>]+>", "", s)).strip()
+    # 태그 자리를 공백으로 바꿔 "</li><li>"처럼 붙은 문장이 이어 붙지 않게 한다
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", s)).split())
 
 
 # ---------- ③ News ----------
@@ -191,6 +195,23 @@ def analyze(news, concept, tags, recent):
         sys.exit(f"LLM 응답 실패: stop_reason={resp.stop_reason}")
     usage = {"model": resp.model, "input_tokens": resp.usage.input_tokens, "output_tokens": resp.usage.output_tokens}
     return json.loads(next(b.text for b in resp.content if b.type == "text")), usage
+
+
+def basic_result(news, concept):
+    """API 키가 없을 때: 내장 커리큘럼 설명과 관심 키워드 상위 뉴스로 analyze()와 같은 모양을 만든다."""
+    # 출처별로 번갈아 고른다 (관심 키워드 순으로 정렬된 상태라 각 출처의 상위 글이 뽑힌다)
+    by_source = {}
+    for i, n in enumerate(news):
+        by_source.setdefault(n["source"], []).append(i)
+    picks = [i for group in zip_longest(*by_source.values()) for i in group if i is not None][:5]
+    return {
+        "news": [{"index": i, "one_line": news[i]["desc"][:120]} for i in picks],
+        "concepts": [{"name": concept["name"], "subject": concept["subject"], "from_news": False, "news_index": -1,
+                      "explanation": "\n".join(concept["points"]), "interview_question": concept["question"], "related": []}],
+        "tag": concept["tag"],
+        "trending_keywords": [],
+        "quiz": [concept["quiz"]],
+    }
 
 
 def valid_index(i, news):
@@ -480,7 +501,8 @@ def check_setup():
     """실행 전에 빠진 설정을 찾아, Actions 로그 첫 줄에서 바로 원인이 보이게 한다."""
     problems = []
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        problems.append("ANTHROPIC_API_KEY가 없습니다. 저장소 Settings → Secrets and variables → Actions에 등록하세요.")
+        print("참고: ANTHROPIC_API_KEY가 없어 기본 모드(내장 커리큘럼)로 실행합니다. "
+              "Settings → Secrets and variables → Actions에 등록하면 뉴스에서 뽑은 개념이 추가됩니다.", file=sys.stderr)
     if CONFIG["field"] not in CONFIG["fields"]:
         problems.append(f"config.json의 field \"{CONFIG['field']}\"가 fields에 없습니다. 가능한 값: {', '.join(CONFIG['fields'])}")
     if not CONFIG["solvedac_handle"]:
@@ -499,7 +521,14 @@ def main():
         sys.exit("뉴스를 한 건도 가져오지 못했습니다")
     history = load_json(HISTORY_FILE, {})
     recent = recent_concepts(history, today)
-    result, usage = analyze(news[:150], curriculum_concept(today), CONFIG["tags"], recent)
+    concept = curriculum_concept(today)
+    mode = "ai" if os.environ.get("ANTHROPIC_API_KEY") else "basic"
+    if mode == "ai":
+        result, usage = analyze(news[:150], concept, CONFIG["tags"], recent)
+        if result["tag"] == "none":
+            result["tag"] = concept["tag"]  # LLM이 연결을 못 찾으면 커리큘럼에 정해 둔 태그
+    else:
+        result, usage = basic_result(news, concept), {}
     dynamic = update_keywords(dynamic, result["trending_keywords"], today, base)
     save_json(KEYWORDS_FILE, dynamic)
 
@@ -523,6 +552,7 @@ def main():
     cur_streak = streak(dates, today)
     data = daily_data(today, news, result, problem, pending_problems(history, solved, today),
                       review_concepts(history, today), cur_streak)
+    data["mode"] = mode
     (ROOT / "daily").mkdir(exist_ok=True)
     (ROOT / "daily" / f"{today}.md").write_text(render_daily(data), encoding="utf-8")
     (ROOT / "data" / "daily").mkdir(parents=True, exist_ok=True)

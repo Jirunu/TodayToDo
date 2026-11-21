@@ -2,20 +2,26 @@ name: daily
 
 on:
   schedule:
-    - cron: "0 22 * * *" # 매일 07:00 KST
+    - cron: "0 22 * * *" # 매일 07:00 KST (GitHub 사정으로 몇 시간 늦어질 수 있음)
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
 jobs:
   daily:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: pip
       - run: pip install -r requirements.txt
       - run: python todaytodo.py
         env:
@@ -26,5 +32,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "daily: $(TZ=Asia/Seoul date +%F)"
+          git diff --cached --quiet && exit 0
+          git commit -m "daily: $(TZ=Asia/Seoul date +%F)"
+          git pull --rebase origin main  # 그사이 내가 노트를 push했어도 충돌 없이 올라가게
           git push

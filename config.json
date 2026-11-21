@@ -1,8 +1,8 @@
 {
   "start_date": "2026-11-20",
   "field": "backend",
-  "solvedac_handle": "",
-  "tier": "s3..g4",
+  "solvedac_handle": "suhoo1018",
+  "tier": "s2..g4",
   "fields": {
     "backend": ["백엔드", "backend", "Spring", "Java", "Kotlin", "Kafka", "Redis", "Postgres", "MySQL", "데이터베이스", "database", "SQL", "MSA", "microservice", "distributed", "분산", "클라우드", "cloud", "AWS", "Kubernetes", "장애", "outage", "API", "성능", "performance"],
     "ai": ["LLM", "AI", "GPU", "에이전트", "agent", "model", "모델", "inference", "추론", "RAG", "MCP", "machine learning", "머신러닝"],

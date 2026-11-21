@@ -198,31 +198,49 @@ def valid_index(i, news):
 
 
 # ---------- ② Coding ----------
-def weakest_tag(handle, tags):
-    """config의 태그 중 내가 가장 적게 푼 태그. 동률이면 그중 무작위."""
-    # shortcut: 응답 첫 페이지만 읽음. 페이지가 나뉘어 오면 page 파라미터로 전부 읽도록 교체
-    url = "https://solved.ac/api/v3/user/problem_tag_stats?" + urllib.parse.urlencode({"handle": handle})
-    solved = {it["tag"]["key"]: it["solved"] for it in get_json(url).get("items", [])}
-    low = min(solved.get(t, 0) for t in tags)
-    return random.choice([t for t in tags if solved.get(t, 0) == low])
+def tag_solved_counts(handle, max_pages=20):
+    """solved.ac 태그별 푼 문제 수. 응답이 30개씩 페이지로 나뉘어 오므로 count만큼 전부 읽는다."""
+    solved, page = {}, 1
+    while page <= max_pages:
+        url = "https://solved.ac/api/v3/user/problem_tag_stats?" + urllib.parse.urlencode({"handle": handle, "page": page})
+        data = get_json(url)
+        items = data.get("items", [])
+        solved.update({it["tag"]["key"]: it["solved"] for it in items})
+        if not items or len(solved) >= data.get("count", 0):
+            break
+        page += 1
+    return solved
 
 
-def recommend_problem(tag, handle, tier, tags):
-    reason = "linked"
-    if tag == "none":
-        reason, tag = "random", random.choice(tags)
-        if handle:
-            try:
-                tag, reason = weakest_tag(handle, tags), "weak"
-            except Exception as e:
-                print(f"약점 태그 조회 실패, 랜덤 태그 사용: {e}", file=sys.stderr)
+def weakest_tags(handle, tags):
+    """config의 태그를 내가 적게 푼 순서로. 동률끼리는 무작위로 섞는다."""
+    solved = tag_solved_counts(handle)
+    return sorted(random.sample(tags, len(tags)), key=lambda t: solved.get(t, 0))
+
+
+def search_problem(tag, handle, tier):
     query = f"#{tag} *{tier} s#500.." + (f" -@{handle}" if handle else "")
     url = "https://solved.ac/api/v3/search/problem?" + urllib.parse.urlencode({"query": query, "sort": "random"})
     items = get_json(url).get("items", [])
-    if not items:
-        return None
-    p = items[0]
-    return {"id": p["problemId"], "title": p["titleKo"], "tag": tag, "reason": reason}
+    return items[0] if items else None
+
+
+def recommend_problem(tag, handle, tier, tags, tries=5):
+    """개념과 이어지는 태그 → 없으면 약점 태그 순서로 → 그 난이도에 문제가 없으면 다음 태그로."""
+    if tag != "none":
+        candidates = [(tag, "linked")]
+    else:
+        order, reason = random.sample(tags, len(tags)), "random"
+        if handle:
+            try:
+                order, reason = weakest_tags(handle, tags), "weak"
+            except Exception as e:
+                print(f"약점 태그 조회 실패, 랜덤 태그 사용: {e}", file=sys.stderr)
+        candidates = [(t, reason) for t in order[:tries]]
+    for t, reason in candidates:
+        if p := search_problem(t, handle, tier):
+            return {"id": p["problemId"], "title": p["titleKo"], "tag": t, "reason": reason}
+    return None
 
 
 # ---------- ④ Commit 기록 ----------

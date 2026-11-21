@@ -85,17 +85,32 @@ assert dyn == {"MCP": "2026-12-10", "최근": "2026-12-09"}
 many = t.update_keywords({}, [f"k{i}" for i in range(15)], d, [], max_n=10)
 assert len(many) == 10
 
-# 약점 태그: 가장 적게 푼 태그, 응답에 없는 태그는 0문제로 본다
-t.get_json = lambda url: {"items": [{"tag": {"key": "dp"}, "solved": 3}, {"tag": {"key": "bfs"}, "solved": 1}]}
-assert t.weakest_tag("me", ["dp", "bfs"]) == "bfs"
-assert t.weakest_tag("me", ["dp", "bfs", "kmp"]) == "kmp"
+# 태그 통계: 30개씩 나뉜 페이지를 count만큼 전부 읽는다
+pages = {1: [("dp", 3), ("bfs", 1)], 2: [("math", 9)]}
+def fake_stats(url):
+    page = int(url.split("page=")[1])
+    return {"count": 3, "items": [{"tag": {"key": k}, "solved": s} for k, s in pages.get(page, [])]}
+t.get_json = fake_stats
+assert t.tag_solved_counts("me") == {"dp": 3, "bfs": 1, "math": 9}
+
+# 약점 태그 순서: 적게 푼 순, 응답에 없는 태그는 0문제
+assert t.weakest_tags("me", ["dp", "bfs", "math", "kmp"]) == ["kmp", "bfs", "dp", "math"]
+
+# 문제 추천: 약점 태그에 맞는 문제가 없으면 다음 태그로
 calls = []
-t.get_json = lambda url: (calls.append(url), {"items": [{"problemId": 1000, "titleKo": "A+B"}]})[1] if "search" in url \
-    else {"items": [{"tag": {"key": "dp"}, "solved": 0}]}
-p = t.recommend_problem("none", "me", "s3..g4", ["dp", "bfs"])
-assert p["reason"] == "weak" and p["tag"] in ("dp", "bfs") and "-%40me" in calls[0]
+def fake_api(url):
+    if "problem_tag_stats" in url:
+        return fake_stats(url)
+    calls.append(url)
+    return {"items": [] if "%23kmp" in url else [{"problemId": 1000, "titleKo": "A+B"}]}
+t.get_json = fake_api
+p = t.recommend_problem("none", "me", "s3..g4", ["dp", "bfs", "math", "kmp"])
+assert p == {"id": 1000, "title": "A+B", "tag": "bfs", "reason": "weak"} and "-%40me" in calls[0] and "%23kmp" in calls[0]
+calls.clear()
 p = t.recommend_problem("hashing", "", "s3..g4", ["dp"])
-assert p == {"id": 1000, "title": "A+B", "tag": "hashing", "reason": "linked"} and "%40" not in calls[1]
+assert p == {"id": 1000, "title": "A+B", "tag": "hashing", "reason": "linked"} and "%40" not in calls[0]
+t.get_json = lambda url: {"count": 0, "items": []}
+assert t.recommend_problem("hashing", "me", "s3..g4", ["dp"]) is None
 
 # 알림: 웹훅이 없으면 아무것도 안 한다
 t.notify(d, {"concepts": []}, None)

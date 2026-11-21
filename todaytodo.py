@@ -458,7 +458,21 @@ def notify(day, result, problem):
         print(f"디스코드 알림 실패: {e}", file=sys.stderr)
 
 
+def check_setup():
+    """실행 전에 빠진 설정을 찾아, Actions 로그 첫 줄에서 바로 원인이 보이게 한다."""
+    problems = []
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        problems.append("ANTHROPIC_API_KEY가 없습니다. 저장소 Settings → Secrets and variables → Actions에 등록하세요.")
+    if CONFIG["field"] not in CONFIG["fields"]:
+        problems.append(f"config.json의 field \"{CONFIG['field']}\"가 fields에 없습니다. 가능한 값: {', '.join(CONFIG['fields'])}")
+    if not CONFIG["solvedac_handle"]:
+        print("참고: config.json의 solvedac_handle이 비어 있어서 이미 푼 문제를 거르지 못하고 약점 태그도 쓰지 않습니다.", file=sys.stderr)
+    if problems:
+        sys.exit("설정이 필요합니다:\n- " + "\n- ".join(problems))
+
+
 def main():
+    check_setup()
     today = datetime.now(KST).date()
     base = CONFIG["fields"][CONFIG["field"]]
     dynamic = load_json(KEYWORDS_FILE, {})

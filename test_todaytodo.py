@@ -1,5 +1,6 @@
 """네트워크 없이 도는 자가 점검: python test_todaytodo.py"""
 import json
+import os
 import shutil
 import tempfile
 from datetime import date, datetime
@@ -158,6 +159,7 @@ try:
     seen_recent = []
     t.analyze = lambda ns, c, tags, recent: (seen_recent.extend(recent), (fake_result, {"model": "m", "input_tokens": 1, "output_tokens": 2}))[1]
     t.recommend_problem = lambda tag, h, tier, tags: {"id": 1920, "title": "수 찾기", "tag": tag, "reason": "linked"}
+    os.environ.setdefault("ANTHROPIC_API_KEY", "test")
     t.main()
 
     assert "MCP" in searched  # 어제 뜬 키워드로 오늘 검색
@@ -190,3 +192,15 @@ finally:
     shutil.rmtree(tmp)
 
 print("all checks passed")
+
+# 설정 점검: 키가 없으면 원인을 적고 멈춘다
+saved_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+try:
+    t.check_setup()
+    raise AssertionError("키가 없는데 통과함")
+except SystemExit as e:
+    assert "ANTHROPIC_API_KEY" in str(e)
+finally:
+    if saved_key is not None:
+        os.environ["ANTHROPIC_API_KEY"] = saved_key
+print("setup check passed")

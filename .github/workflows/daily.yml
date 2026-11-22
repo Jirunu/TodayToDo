@@ -2,7 +2,8 @@ name: daily
 
 on:
   schedule:
-    - cron: "0 22 * * *" # 매일 07:00 KST (GitHub 사정으로 몇 시간 늦어질 수 있음)
+    - cron: "0 22 * * *" # 매일 07:00 KST 오늘의 기록 (GitHub 사정으로 몇 시간 늦어질 수 있음)
+    - cron: "0 12 * * *" # 매일 21:00 KST 그날 푼 문제·노트를 반영하는 갱신
   workflow_dispatch:
 
 permissions:

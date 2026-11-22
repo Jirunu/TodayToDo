@@ -521,15 +521,59 @@ def check_setup():
         sys.exit("설정이 필요합니다:\n- " + "\n- ".join(problems))
 
 
+def publish(history, today, fresh=None):
+    """history로 만드는 파일(오늘 페이지, 아카이브, 잔디, 주간 리포트, site.json, README)을 다시 쓴다.
+    fresh가 있으면 오늘 페이지를 새로 만들고, 없으면 이미 있는 오늘 페이지의 풀이·연속 기록만 고친다."""
+    dates, solved = note_dates(), solved_ids()
+    if CONFIG["solvedac_handle"]:
+        recommended = [p["id"] for v in history.values() if (p := v.get("problem"))]
+        try:
+            solved |= solved_on_boj(CONFIG["solvedac_handle"], recommended)
+        except Exception as e:  # solved.ac가 안 되면 solutions/ 파일만으로 판단
+            print(f"solved.ac 풀이 기록 조회 실패: {e}", file=sys.stderr)
+    cur_streak = streak(dates, today)
+    pending = pending_problems(history, solved, today)
+    problem = history[str(today)]["problem"]
+    daily_json = ROOT / "data" / "daily" / f"{today}.json"
+    if fresh:
+        data = daily_data(today, fresh["news"], fresh["result"], problem, pending, review_concepts(history, today), cur_streak)
+        data["mode"] = fresh["mode"]
+    else:
+        data = load_json(daily_json, None)
+        if data:
+            data.update(streak=cur_streak, pending=[{"date": d, "problem": p} for d, p in pending])
+    if data:
+        (ROOT / "daily").mkdir(exist_ok=True)
+        (ROOT / "daily" / f"{today}.md").write_text(render_daily(data), encoding="utf-8")
+        daily_json.parent.mkdir(parents=True, exist_ok=True)
+        save_json(daily_json, data)
+    (ROOT / "concepts.md").write_text(render_archive(history), encoding="utf-8")
+    (ROOT / "assets").mkdir(exist_ok=True)
+    (ROOT / "assets" / "heatmap.svg").write_text(render_heatmap(history, dates, solved, today), encoding="utf-8")
+    if today.weekday() == 0:  # 월요일에 지난주 리포트
+        title, text = render_weekly(history, solved, dates, today)
+        (ROOT / "weekly").mkdir(exist_ok=True)
+        (ROOT / "weekly" / f"{title}.md").write_text(text, encoding="utf-8")
+    save_json(ROOT / "data" / "site.json", site_data(history, dates, solved, today, cur_streak))
+    readme = ROOT / "README.md"
+    readme.write_text(replace_block(readme.read_text(encoding="utf-8"),
+                                    render_readme_block(today, problem, cur_streak, subject_counts(), len(dates))), encoding="utf-8")
+
+
 def main():
     check_setup()
     today = datetime.now(KST).date()
+    history = load_json(HISTORY_FILE, {})
+    # 예약 실행이 늦게 오거나 저녁 갱신이 돌아도 오늘의 문제가 바뀌지 않게 한다
+    if str(today) in history and not os.environ.get("TODAYTODO_FORCE"):
+        publish(history, today)
+        print(f"refreshed: {today} (오늘 기록이 이미 있어 풀이·노트·통계만 갱신)")
+        return
     base = CONFIG["fields"][CONFIG["field"]]
     dynamic = load_json(KEYWORDS_FILE, {})
     news = fetch_news(base + [k for k in dynamic if k not in base])
     if not news:
         sys.exit("뉴스를 한 건도 가져오지 못했습니다")
-    history = load_json(HISTORY_FILE, {})
     recent = recent_concepts(history, today)
     concept = curriculum_concept(today)
     mode = "ai" if os.environ.get("ANTHROPIC_API_KEY") else "basic"
@@ -557,35 +601,7 @@ def main():
         "usage": usage,
     }
     save_json(HISTORY_FILE, history)
-
-    dates, solved = note_dates(), solved_ids()
-    if CONFIG["solvedac_handle"]:
-        recommended = [p["id"] for v in history.values() if (p := v.get("problem"))]
-        try:
-            solved |= solved_on_boj(CONFIG["solvedac_handle"], recommended)
-        except Exception as e:  # solved.ac가 안 되면 solutions/ 파일만으로 판단
-            print(f"solved.ac 풀이 기록 조회 실패: {e}", file=sys.stderr)
-    cur_streak = streak(dates, today)
-    data = daily_data(today, news, result, problem, pending_problems(history, solved, today),
-                      review_concepts(history, today), cur_streak)
-    data["mode"] = mode
-    (ROOT / "daily").mkdir(exist_ok=True)
-    (ROOT / "daily" / f"{today}.md").write_text(render_daily(data), encoding="utf-8")
-    (ROOT / "data" / "daily").mkdir(parents=True, exist_ok=True)
-    save_json(ROOT / "data" / "daily" / f"{today}.json", data)
-    (ROOT / "concepts.md").write_text(render_archive(history), encoding="utf-8")
-    (ROOT / "assets").mkdir(exist_ok=True)
-    (ROOT / "assets" / "heatmap.svg").write_text(render_heatmap(history, dates, solved, today), encoding="utf-8")
-    if today.weekday() == 0:  # 월요일 아침에 지난주 리포트
-        title, text = render_weekly(history, solved, dates, today)
-        (ROOT / "weekly").mkdir(exist_ok=True)
-        (ROOT / "weekly" / f"{title}.md").write_text(text, encoding="utf-8")
-
-    save_json(ROOT / "data" / "site.json", site_data(history, dates, solved, today, cur_streak))
-
-    readme = ROOT / "README.md"
-    readme.write_text(replace_block(readme.read_text(encoding="utf-8"),
-                                    render_readme_block(today, problem, cur_streak, subject_counts(), len(dates))), encoding="utf-8")
+    publish(history, today, {"news": news, "result": result, "mode": mode})
     notify(today, result, problem)
     print(f"done: daily/{today}.md")
 

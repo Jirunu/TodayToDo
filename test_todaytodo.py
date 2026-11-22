@@ -262,8 +262,19 @@ try:
     assert dj["concepts"][0]["explanation"] == concept["points"] and dj["quiz"] == [concept["quiz"]]
     assert picked == [concept["tag"]] and len(dj["news"]) == 1
     assert t.load_json(t.HISTORY_FILE, {})[str(today)]["usage"] == {}
+    print("basic mode passed")
+
+    # 같은 날 다시 실행: 뉴스·문제는 그대로 두고 노트·연속 기록만 갱신
+    (tmp / "notes" / f"{today}.md").write_text("subject: 자료구조\n", encoding="utf-8")
+    t.fetch_news = lambda kws: (_ for _ in ()).throw(AssertionError("갱신인데 뉴스를 다시 모음"))
+    t.recommend_problem = lambda *a: (_ for _ in ()).throw(AssertionError("갱신인데 문제를 다시 고름"))
+    t.main()
+    again = t.load_json(tmp / "data" / "daily" / f"{today}.json", {})
+    assert again["streak"] == 1 and again["concepts"] == dj["concepts"] and again["news"] == dj["news"]
+    site = t.load_json(tmp / "data" / "site.json", {})
+    assert site["notes"] == [str(today)] and site["stats"]["streak"] == 1
+    print("refresh passed")
 finally:
     shutil.rmtree(tmp)
     if saved_key is not None:
         os.environ["ANTHROPIC_API_KEY"] = saved_key
-print("basic mode passed")

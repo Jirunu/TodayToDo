@@ -15,5 +15,22 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-22": {
+    "concepts": [
+      {
+        "name": "해시 테이블과 충돌 해결",
+        "subject": "자료구조",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 14171,
+      "title": "Cities and States",
+      "tag": "hashing",
+      "reason": "linked"
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

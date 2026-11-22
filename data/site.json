@@ -1,17 +1,31 @@
 {
-  "updated": "2026-11-21",
+  "updated": "2026-11-22",
   "repo": "Jirunu/TodayToDo",
   "field": "backend",
   "stats": {
     "streak": 0,
     "notes": 0,
     "solved": 0,
-    "concepts": 1
+    "concepts": 2
   },
   "notes": [],
   "solved": [],
   "weeks": [],
   "history": {
+    "2026-11-22": {
+      "concepts": [
+        {
+          "name": "해시 테이블과 충돌 해결",
+          "subject": "자료구조"
+        }
+      ],
+      "problem": {
+        "id": 14171,
+        "title": "Cities and States",
+        "tag": "hashing",
+        "reason": "linked"
+      }
+    },
     "2026-11-21": {
       "concepts": [
         {
@@ -27,5 +41,5 @@
       }
     }
   },
-  "graph": "graph LR\n  subgraph s0 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n  end"
+  "graph": "graph LR\n  subgraph s0 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n    n1[\"해시 테이블과 충돌 해결\"]\n  end"
 }

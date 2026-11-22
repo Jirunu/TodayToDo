@@ -23,9 +23,9 @@
 ## 오늘
 
 <!-- TODAY:START -->
-**오늘 (2026-11-21)** → [daily/2026-11-21.md](daily/2026-11-21.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
+**오늘 (2026-11-22)** → [daily/2026-11-22.md](daily/2026-11-22.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
 
-- [BOJ 2257 화학식량](https://www.acmicpc.net/problem/2257) `#stack` (오늘 개념과 연결)
+- [BOJ 14171 Cities and States](https://www.acmicpc.net/problem/14171) `#hashing` (오늘 개념과 연결)
 
 🔥 연속 0일 · 📝 누적 노트 0개
 

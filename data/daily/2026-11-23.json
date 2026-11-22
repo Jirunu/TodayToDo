@@ -35,7 +35,8 @@
     "id": 23843,
     "title": "콘센트",
     "tag": "priority_queue",
-    "reason": "linked"
+    "reason": "linked",
+    "level": 11
   },
   "pending": [
     {
@@ -44,7 +45,8 @@
         "id": 2257,
         "title": "화학식량",
         "tag": "stack",
-        "reason": "linked"
+        "reason": "linked",
+        "level": 10
       }
     },
     {
@@ -53,7 +55,8 @@
         "id": 14171,
         "title": "Cities and States",
         "tag": "hashing",
-        "reason": "linked"
+        "reason": "linked",
+        "level": 11
       }
     }
   ],

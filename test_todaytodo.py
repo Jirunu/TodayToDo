@@ -19,6 +19,16 @@ atom = """<?xml version='1.0' encoding='UTF-8'?>
 gn = t.parse_geeknews(atom)
 assert gn == [{"title": "Redis 장애 & 복구", "desc": "캐시 서버", "link": "https://news.hada.io/topic?id=1", "source": "GeekNews"}]
 
+# 티어 이름
+assert [t.tier_name(x) for x in (0, 1, 5, 9, 11, 30)] == ["", "Bronze V", "Bronze I", "Silver II", "Gold V", "Ruby I"]
+
+# 예전 추천 문제 레벨 채우기: 없는 것만 묻고, 이미 있으면 묻지 않는다
+lv_hist = {"d1": {"problem": {"id": 7}}, "d2": {"problem": {"id": 8, "level": 3}}, "d3": {"problem": None}}
+t.get_json = lambda url: {"items": [{"problemId": 7, "level": 9}, {"problemId": 99, "level": 1}]}
+assert t.fill_levels(lv_hist) and lv_hist["d1"]["problem"]["level"] == 9 and lv_hist["d2"]["problem"]["level"] == 3
+t.get_json = lambda url: (_ for _ in ()).throw(AssertionError("채울 게 없는데 물어봄"))
+assert t.fill_levels(lv_hist) is False
+
 # 태그 사이 문장이 붙지 않게
 assert t.clean("<ul><li>첫 문장임</li><li>둘째 문장</li></ul>") == "첫 문장임 둘째 문장"
 
@@ -114,10 +124,10 @@ def fake_api(url):
     return {"items": [] if "%23kmp" in url else [{"problemId": 1000, "titleKo": "A+B"}]}
 t.get_json = fake_api
 p = t.recommend_problem("none", "me", "s3..g4", ["dp", "bfs", "math", "kmp"])
-assert p == {"id": 1000, "title": "A+B", "tag": "bfs", "reason": "weak"} and "-s%40me" in calls[0] and "%23kmp" in calls[0]
+assert p == {"id": 1000, "title": "A+B", "tag": "bfs", "reason": "weak", "level": 0} and "-s%40me" in calls[0] and "%23kmp" in calls[0]
 calls.clear()
 p = t.recommend_problem("hashing", "", "s3..g4", ["dp"])
-assert p == {"id": 1000, "title": "A+B", "tag": "hashing", "reason": "linked"} and "%40" not in calls[0]
+assert p == {"id": 1000, "title": "A+B", "tag": "hashing", "reason": "linked", "level": 0} and "%40" not in calls[0]
 t.get_json = lambda url: {"count": 0, "items": []}
 assert t.recommend_problem("hashing", "me", "s3..g4", ["dp"]) is None
 

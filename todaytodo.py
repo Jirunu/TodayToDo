@@ -249,6 +249,30 @@ def solved_on_boj(handle, ids, chunk=40):
     return solved
 
 
+TIERS = ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Ruby"]
+
+
+def tier_name(level):
+    """solved.ac 레벨(1~30) → "Silver II". 0이거나 없으면 빈 문자열."""
+    if not level:
+        return ""
+    return f"{TIERS[(level - 1) // 5]} {['V', 'IV', 'III', 'II', 'I'][(level - 1) % 5]}"
+
+
+def fill_levels(history):
+    """레벨 없이 저장된 예전 추천 문제에 solved.ac 레벨을 채운다. 채운 게 있으면 True."""
+    missing = {p["id"]: p for v in history.values() if (p := v.get("problem")) and "level" not in p}
+    if not missing:
+        return False
+    # shortcut: 한 번에 50개(검색 1페이지)까지만 채움, 예전 기록이 그보다 많아지면 나눠서 묻도록 교체
+    group = "|".join(f"id:{i}" for i in list(missing)[:50])
+    url = "https://solved.ac/api/v3/search/problem?" + urllib.parse.urlencode({"query": f"({group})"})
+    for it in get_json(url).get("items", []):
+        if it["problemId"] in missing:
+            missing[it["problemId"]]["level"] = it.get("level", 0)
+    return True
+
+
 def search_problem(tag, handle, tier):
     query = f"#{tag} *{tier} s#500.." + (f" -s@{handle}" if handle else "")
     url = "https://solved.ac/api/v3/search/problem?" + urllib.parse.urlencode({"query": query, "sort": "random"})
@@ -270,7 +294,7 @@ def recommend_problem(tag, handle, tier, tags, tries=5):
         candidates = [(t, reason) for t in order[:tries]]
     for t, reason in candidates:
         if p := search_problem(t, handle, tier):
-            return {"id": p["problemId"], "title": p["titleKo"], "tag": t, "reason": reason}
+            return {"id": p["problemId"], "title": p["titleKo"], "tag": t, "reason": reason, "level": p.get("level", 0)}
     return None
 
 
@@ -326,7 +350,8 @@ def boj(p):
 def problem_line(p):
     if not p:
         return "- (오늘은 추천 문제를 가져오지 못했습니다)"
-    return f"- {boj(p)} `#{p['tag']}` ({REASON.get(p.get('reason'), '')})"
+    tier = f" {tier_name(p.get('level'))}" if p.get("level") else ""
+    return f"- {boj(p)}{tier} `#{p['tag']}` ({REASON.get(p.get('reason'), '')})"
 
 
 def news_ref(item):
@@ -524,6 +549,11 @@ def check_setup():
 def publish(history, today, fresh=None):
     """history로 만드는 파일(오늘 페이지, 아카이브, 잔디, 주간 리포트, site.json, README)을 다시 쓴다.
     fresh가 있으면 오늘 페이지를 새로 만들고, 없으면 이미 있는 오늘 페이지의 풀이·연속 기록만 고친다."""
+    try:
+        if fill_levels(history):
+            save_json(HISTORY_FILE, history)
+    except Exception as e:
+        print(f"문제 레벨 조회 실패: {e}", file=sys.stderr)
     dates, solved = note_dates(), solved_ids()
     if CONFIG["solvedac_handle"]:
         recommended = [p["id"] for v in history.values() if (p := v.get("problem"))]
@@ -541,7 +571,7 @@ def publish(history, today, fresh=None):
     else:
         data = load_json(daily_json, None)
         if data:
-            data.update(streak=cur_streak, pending=[{"date": d, "problem": p} for d, p in pending])
+            data.update(streak=cur_streak, problem=problem, pending=[{"date": d, "problem": p} for d, p in pending])
     if data:
         (ROOT / "daily").mkdir(exist_ok=True)
         (ROOT / "daily" / f"{today}.md").write_text(render_daily(data), encoding="utf-8")

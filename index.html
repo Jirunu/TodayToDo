@@ -386,7 +386,21 @@ function repo() {
   if (host.endsWith(".github.io")) return `${host.split(".")[0]}/${location.pathname.split("/")[1] || ""}`;
   return document.querySelector('meta[name="repo"]')?.content || "";
 }
-const ghNew = (dir, filename) => repo() && `https://github.com/${repo()}/new/main/${dir}?filename=${encodeURIComponent(filename)}`;
+// GitHub 새 파일 화면을 파일 이름과 내용(value)을 채운 채로 연다
+const ghNew = (dir, filename, value = "") => repo() &&
+  `https://github.com/${repo()}/new/main/${dir}?filename=${encodeURIComponent(filename)}${value ? `&value=${encodeURIComponent(value)}` : ""}`;
+
+function noteTemplate(d) {
+  const subjects = [...new Set(d.concepts.map(c => c.subject))].join(", ");
+  const lines = [`subject: ${subjects}`, "", `# ${d.date} 오늘의 공부`, ""];
+  for (const c of d.concepts) {
+    lines.push(`## ${c.name}`, "- 핵심을 내 말로:", "- ", "", "### 면접 질문에 답해보기", `- Q: ${c.interview_question}`, "- A: ", "");
+  }
+  if (d.problem) lines.push(`## 오늘의 문제: BOJ ${d.problem.id} ${d.problem.title}`, "- 접근:", "- 막힌 점:", "");
+  return lines.join("\n");
+}
+
+const solutionTemplate = p => `# BOJ ${p.id} ${p.title}\n# https://www.acmicpc.net/problem/${p.id}\n# #${p.tag}\n\n`;
 const sourceChip = s => h("span", { class: `chip ${s === "Hacker News" ? "hn" : "gn"}` }, s === "Hacker News" ? "HN" : "GeekNews");
 
 // 사용자가 쓴 노트(마크다운)는 항상 정화한 뒤 넣는다
@@ -515,7 +529,7 @@ function quiz(items) {
 function problemCard(p, date) {
   if (!p) return h("div", { class: "card pad muted" }, "오늘은 추천 문제를 가져오지 못했습니다.");
   const done = site.solved.includes(p.id);
-  const upload = ghNew("solutions", `BOJ_${p.id}.py`);
+  const upload = ghNew("solutions", `BOJ_${p.id}.py`, solutionTemplate(p));
   return h("div", { class: "card problem" },
     h("div", { class: "boj" }, h("div", {}, h("small", {}, "BOJ"), h("span", {}, String(p.id)))),
     h("div", { class: "info" },
@@ -544,14 +558,15 @@ function newsList(items) {
       h("div", { class: "n-body" }, h("div", { class: "n-title" }, n.title), h("div", { class: "n-line" }, n.one_line)))));
 }
 
-async function noteSection(date) {
+async function noteSection(d) {
+  const date = d.date;
   if (site.notes.includes(date)) {
     const src = (await get(`notes/${date}.md`, "text")).replace(/^subject:.*$/im, "");
     return h("div", { class: "card note" }, markdown(src));
   }
-  const create = ghNew("notes", `${date}.md`);
+  const create = ghNew("notes", `${date}.md`, noteTemplate(d));
   return h("div", { class: "card empty-note" },
-    h("p", {}, "아직 이 날의 노트가 없어요. 공부한 내용을 내 말로 정리하면 여기와 잔디에 표시됩니다."),
+    h("p", {}, "아직 이 날의 노트가 없어요. 노트 쓰기를 누르면 오늘의 개념·면접 질문·문제가 채워진 템플릿이 열립니다."),
     create && h("div", { class: "actions" },
       ext(create, { class: "btn primary" }, icon("note"), "노트 쓰기"),
       ext(`https://github.com/${repo()}/blob/main/notes/TEMPLATE.md`, { class: "btn" }, "템플릿 보기")));
@@ -591,7 +606,7 @@ async function dayView(date) {
       quiz(d.quiz)),
     section("2", "오늘의 문제", null, problemCard(d.problem, date), pendingList(d.pending)),
     section("3", "오늘의 뉴스", "GeekNews · Hacker News", newsList(d.news)),
-    section("4", "내 노트", null, await noteSection(date)),
+    section("4", "내 노트", null, await noteSection(d)),
   ];
 }
 

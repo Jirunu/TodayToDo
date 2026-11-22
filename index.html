@@ -181,6 +181,9 @@
   .quiz .answer { padding: 0 20px 16px 60px; color: var(--text-2); }
   .quiz .answer b { color: var(--accent-strong); margin-right: 6px; }
 
+  .more { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); padding-top: 12px; border-top: 1px solid var(--line); }
+  .more a { color: var(--text-2); text-decoration: none; font-weight: 600; }
+  .more a:hover { color: var(--accent-strong); text-decoration: underline; }
   .basic-note { margin: 12px 2px 0; font-size: 13.5px; color: var(--muted); }
   .basic-note a { color: var(--accent-strong); font-weight: 600; }
   .reviews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
@@ -523,7 +526,11 @@ function conceptCard(c) {
     h("h3", {}, c.name),
     h("ul", {}, c.explanation.map(l => h("li", {}, l))),
     h("div", { class: "ask" }, h("b", {}, "💬 면접 질문"), c.interview_question),
-    c.news && ext(c.news.link, { class: "related" }, sourceChip(c.news.source), h("span", {}, c.news.title)));
+    c.news && ext(c.news.link, { class: "related" }, sourceChip(c.news.source), h("span", {}, c.news.title)),
+    h("div", { class: "more" }, "더 알아보기",
+      ext(`https://ko.wikipedia.org/w/index.php?search=${encodeURIComponent(c.name)}`, {}, "위키백과"),
+      ext(`https://www.google.com/search?q=${encodeURIComponent(`${c.name} 면접 질문`)}`, {}, "면접 질문 검색"),
+      ext(`https://www.youtube.com/results?search_query=${encodeURIComponent(c.name)}`, {}, "영상")));
 }
 
 function quiz(items) {

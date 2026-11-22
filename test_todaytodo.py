@@ -29,6 +29,14 @@ assert t.fill_levels(lv_hist) and lv_hist["d1"]["problem"]["level"] == 9 and lv_
 t.get_json = lambda url: (_ for _ in ()).throw(AssertionError("채울 게 없는데 물어봄"))
 assert t.fill_levels(lv_hist) is False
 
+# 프로필 카드: 특수문자는 이스케이프, 티어·연속 기록 표시, 올바른 XML
+import xml.etree.ElementTree as XET
+card = t.render_today_card(date(2026, 11, 23), [{"name": "R&D <락>", "subject": "OS"}],
+                           {"id": 1, "title": "A&B", "level": 9}, 3, 5)
+XET.fromstring(card)
+assert "R&amp;D &lt;락&gt;" in card and "A&amp;B" in card and "Silver II" in card and "연속 공부 3일" in card
+XET.fromstring(t.render_today_card(date(2026, 11, 23), [], None, 0, 0, dark=True))
+
 # 태그 사이 문장이 붙지 않게
 assert t.clean("<ul><li>첫 문장임</li><li>둘째 문장</li></ul>") == "첫 문장임 둘째 문장"
 
@@ -220,6 +228,8 @@ try:
     assert saved == ["어제 개념"]  # LLM이 지어낸 이름은 버림
     assert "```mermaid" in (tmp / "concepts.md").read_text(encoding="utf-8")
     assert (tmp / "assets" / "heatmap.svg").read_text(encoding="utf-8").startswith("<svg")
+    assert "캐시 스탬피드" in (tmp / "assets" / "today.svg").read_text(encoding="utf-8")
+    assert (tmp / "assets" / "today-dark.svg").exists()
     site = t.load_json(tmp / "data" / "site.json", {})
     assert list(site["history"]) == [str(today), yesterday] and site["history"][yesterday]["concepts"][0]["name"] == "어제 개념"
     assert site["notes"] == [yesterday] and site["stats"] == {"streak": 1, "notes": 1, "solved": 0, "concepts": 3}

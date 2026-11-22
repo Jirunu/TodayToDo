@@ -444,6 +444,30 @@ def render_heatmap(history, dates, solved, today, weeks=20):
             f'<text x="{w - 28}" y="117" fill="#57606a">많음</text></svg>\n')
 
 
+def render_today_card(day, concepts, problem, cur_streak, total_notes, dark=False):
+    """GitHub 프로필 README에 붙이는 '오늘의 공부' 카드. 매일 다시 그려서 프로필이 저절로 바뀐다."""
+    bg, line, text, muted, accent = (("#0d1117", "#30363d", "#e6edf3", "#8b949e", "#3fb950") if dark
+                                     else ("#ffffff", "#d0d7de", "#1f2328", "#59636e", "#1a7f37"))
+    e = html.escape
+    raw_names = " · ".join(c["name"] for c in concepts) or "-"
+    names, name_size = e(raw_names), 16 if len(raw_names) <= 24 else 13  # 개념 두 개면 카드 폭을 넘지 않게 작게
+    subjects = " · ".join(dict.fromkeys(e(c["subject"]) for c in concepts))
+    prob = (f"BOJ {problem['id']} {e(problem['title'])}" + (f"  ·  {tier_name(problem.get('level'))}" if problem.get("level") else "")
+            if problem else "-")
+    font = "-apple-system,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif"
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="495" height="160" viewBox="0 0 495 160" font-family="{font}">
+  <rect x="0.5" y="0.5" width="494" height="159" rx="10" fill="{bg}" stroke="{line}"/>
+  <text x="24" y="34" font-size="13" font-weight="700" fill="{accent}">TodayToDo</text>
+  <text x="471" y="34" font-size="12" fill="{muted}" text-anchor="end">{day}</text>
+  <text x="24" y="66" font-size="11" fill="{muted}">오늘의 CS{f" · {subjects}" if subjects else ""}</text>
+  <text x="24" y="86" font-size="{name_size}" font-weight="700" fill="{text}">{names}</text>
+  <text x="24" y="114" font-size="11" fill="{muted}">오늘의 문제</text>
+  <text x="24" y="133" font-size="14" font-weight="600" fill="{text}">{prob}</text>
+  <text x="471" y="133" font-size="12" fill="{muted}" text-anchor="end">연속 공부 {cur_streak}일 · 노트 {total_notes}개</text>
+</svg>
+'''
+
+
 def render_archive(history):
     counts = Counter(c["name"] for v in history.values() for c in v["concepts"])
     lines = ["# 개념 아카이브", "", f"지금까지 공부한 개념 {len(counts)}개 (×N은 다시 나온 횟수)", "",
@@ -580,6 +604,9 @@ def publish(history, today, fresh=None):
     (ROOT / "concepts.md").write_text(render_archive(history), encoding="utf-8")
     (ROOT / "assets").mkdir(exist_ok=True)
     (ROOT / "assets" / "heatmap.svg").write_text(render_heatmap(history, dates, solved, today), encoding="utf-8")
+    for dark, name in ((False, "today.svg"), (True, "today-dark.svg")):
+        (ROOT / "assets" / name).write_text(render_today_card(
+            today, history[str(today)]["concepts"], problem, cur_streak, len(dates), dark), encoding="utf-8")
     if today.weekday() == 0:  # 월요일에 지난주 리포트
         title, text = render_weekly(history, solved, dates, today)
         (ROOT / "weekly").mkdir(exist_ok=True)

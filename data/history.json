@@ -32,5 +32,22 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-23": {
+    "concepts": [
+      {
+        "name": "힙과 우선순위 큐",
+        "subject": "자료구조",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 23843,
+      "title": "콘센트",
+      "tag": "priority_queue",
+      "reason": "linked"
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

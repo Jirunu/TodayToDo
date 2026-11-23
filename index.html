@@ -538,12 +538,20 @@ async function heatmap() {
 }
 
 /* ---------- 하루 페이지 ---------- */
-function stats() {
+async function stats() {
   const s = site.stats;
   const tile = (label, value, unit) => h("div", { class: "card stat" },
     h("div", { class: "label" }, label), h("div", { class: "value" }, String(value), h("small", {}, unit)));
+  // 잔디와 같은 기준(GitHub 기여)으로 센 연속 일수. 오늘 아직 커밋 전이면 어제까지로 센다
+  const contrib = await loadContributions();
+  let commitStreak = 0;
+  if (contrib) {
+    const d = new Date();
+    if (!contrib[fmt(d)]) d.setDate(d.getDate() - 1);
+    while (contrib[fmt(d)]) { commitStreak++; d.setDate(d.getDate() - 1); }
+  }
   return h("div", { class: "stats" },
-    tile("🔥 연속 공부", s.streak, "일"), tile("📝 누적 노트", s.notes, "개"),
+    contrib ? tile("🔥 연속 커밋", commitStreak, "일") : tile("🔥 연속 공부", s.streak, "일"), tile("📝 누적 노트", s.notes, "개"),
     tile("✅ 푼 추천 문제", s.solved, "문제"), tile("📚 공부한 개념", s.concepts, "개"));
 }
 
@@ -638,7 +646,7 @@ async function dayView(date) {
       h("div", { class: "day-nav" },
         h("a", { class: "btn", href: prev ? `#/day/${prev}` : null, "aria-disabled": !prev, style: prev ? null : "opacity:.4;pointer-events:none", "aria-label": "이전 날" }, icon("left")),
         h("a", { class: "btn", href: next ? `#/day/${next}` : null, "aria-disabled": !next, style: next ? null : "opacity:.4;pointer-events:none", "aria-label": "다음 날" }, icon("right")))),
-    isLatest && stats(),
+    isLatest && await stats(),
     isLatest && await heatmap(),
     section("1", "오늘의 CS", d.mode === "basic" ? "오늘의 커리큘럼" : "커리큘럼 1개 + 뉴스에서 1개",
       h("div", { class: "grid-2" }, d.concepts.map(conceptCard)),

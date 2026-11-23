@@ -23,9 +23,9 @@
 ## 오늘
 
 <!-- TODAY:START -->
-**오늘 (2026-11-23)** → [daily/2026-11-23.md](daily/2026-11-23.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
+**오늘 (2026-11-24)** → [daily/2026-11-24.md](daily/2026-11-24.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
 
-- [BOJ 23843 콘센트](https://www.acmicpc.net/problem/23843) Gold V `#priority_queue` (오늘 개념과 연결)
+- [BOJ 21939 문제 추천 시스템 Version 1](https://www.acmicpc.net/problem/21939) Gold IV `#tree_set` (오늘 개념과 연결)
 
 🔥 연속 0일 · 📝 누적 노트 0개
 

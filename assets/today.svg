@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="495" height="160" viewBox="0 0 495 160" font-family="-apple-system,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif">
   <rect x="0.5" y="0.5" width="494" height="159" rx="10" fill="#ffffff" stroke="#d0d7de"/>
   <text x="24" y="34" font-size="13" font-weight="700" fill="#1a7f37">TodayToDo</text>
-  <text x="471" y="34" font-size="12" fill="#59636e" text-anchor="end">2026-11-23</text>
+  <text x="471" y="34" font-size="12" fill="#59636e" text-anchor="end">2026-11-24</text>
   <text x="24" y="66" font-size="11" fill="#59636e">오늘의 CS · 자료구조</text>
-  <text x="24" y="86" font-size="16" font-weight="700" fill="#1f2328">힙과 우선순위 큐</text>
+  <text x="24" y="86" font-size="16" font-weight="700" fill="#1f2328">이진 탐색 트리와 균형 트리</text>
   <text x="24" y="114" font-size="11" fill="#59636e">오늘의 문제</text>
-  <text x="24" y="133" font-size="14" font-weight="600" fill="#1f2328">BOJ 23843 콘센트  ·  Gold V</text>
+  <text x="24" y="133" font-size="14" font-weight="600" fill="#1f2328">BOJ 21939 문제 추천 시스템 Version 1  ·  Gold IV</text>
   <text x="471" y="133" font-size="12" fill="#59636e" text-anchor="end">연속 공부 0일 · 노트 0개</text>
 </svg>

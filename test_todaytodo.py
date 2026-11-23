@@ -233,7 +233,7 @@ try:
     site = t.load_json(tmp / "data" / "site.json", {})
     assert list(site["history"]) == [str(today), yesterday] and site["history"][yesterday]["concepts"][0]["name"] == "어제 개념"
     assert site["notes"] == [yesterday] and site["stats"] == {"streak": 1, "notes": 1, "solved": 0, "concepts": 3}
-    assert site["graph"].startswith("graph LR") and site["updated"] == str(today)
+    assert site["graph"].startswith("graph LR") and site["updated"] == str(today) and site["start_date"] == t.CONFIG["start_date"]
     dj = t.load_json(tmp / "data" / "daily" / f"{today}.json", {})
     assert dj["concepts"][1]["news"] == {"title": "Redis 장애 & 복구", "link": "https://a.com/1", "source": "GeekNews"}
     assert dj["concepts"][0]["news"] is None and dj["concepts"][0]["explanation"] == ["줄1", "줄2", "줄3"]

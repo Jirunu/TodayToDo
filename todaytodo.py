@@ -518,6 +518,7 @@ def site_data(history, dates, solved, today, cur_streak):
     recommended = {p["id"] for v in history.values() if (p := v.get("problem"))}
     return {
         "updated": str(today),
+        "start_date": CONFIG["start_date"],  # 웹 페이지가 커리큘럼 일정(언제 어떤 개념인지)을 계산하는 기준
         "repo": os.environ.get("GITHUB_REPOSITORY", ""),
         "field": CONFIG["field"],
         "stats": {"streak": cur_streak, "notes": len(dates), "solved": len(recommended & solved),

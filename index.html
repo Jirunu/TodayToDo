@@ -266,6 +266,35 @@
   .ctile:hover { border-color: var(--line-strong); }
   .ctile b { font-size: 15.5px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.4; }
   .ctile .foot { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--muted); margin-top: auto; }
+  .overall { padding: 16px 20px; display: grid; gap: 10px; margin-bottom: 16px; font-size: 13.5px; }
+  .bar { display: inline-block; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; flex: 1; min-width: 60px; }
+  .bar.big { height: 10px; width: 100%; }
+  .bar { display: inline-flex; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  .bar i.covered { background: var(--heat-1); }
+  .rgroup { margin-top: 26px; }
+  .rhead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14.5px; }
+  .rhead .muted { font-size: 13px; font-variant-numeric: tabular-nums; }
+  .rhead .bar { max-width: 180px; }
+  .rlist { display: grid; gap: 8px; }
+  .croad > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 13px 16px; }
+  .croad > summary::-webkit-details-marker { display: none; }
+  .croad .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--line-strong); flex: none; }
+  .croad.done .dot { background: var(--accent); border-color: var(--accent); }
+  .croad.today .dot { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .croad .cname { flex: 1; font-weight: 650; }
+  .croad.next .cname, .croad.missed .cname { color: var(--text-2); font-weight: 550; }
+  .croad .cstate { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .croad.done .cstate, .croad.today .cstate { color: var(--accent-strong); font-weight: 700; }
+  .croad.covered .dot { border-color: var(--accent); }
+  .croad.covered .cstate { color: var(--warn); }
+  .croad .cbody { padding: 0 16px 16px 38px; display: grid; gap: 10px; }
+  .croad .cbody ul { margin: 0; padding-left: 18px; color: var(--text-2); display: grid; gap: 4px; }
+  .cquiz summary { cursor: pointer; font-size: 14px; font-weight: 600; }
+  .cquiz p { margin: 6px 0 0; color: var(--text-2); font-size: 14px; }
+  .cquiz p b { color: var(--accent-strong); margin-right: 4px; }
+  .clink { font-size: 13.5px; color: var(--accent-strong); font-weight: 600; text-decoration: none; }
+  @media (max-width: 720px) { .croad .cbody { padding-left: 16px; } }
   .graph-box { margin-top: 28px; }
   .graph-box summary { cursor: pointer; font-weight: 700; padding: 16px 20px; list-style: none; display: flex; justify-content: space-between; }
   .graph-box summary::-webkit-details-marker { display: none; }
@@ -662,35 +691,83 @@ function daysView() {
 }
 
 /* ---------- 개념 ---------- */
-function conceptsView() {
-  const byName = new Map();
+async function conceptsView() {
+  let curriculum = [];
+  try { curriculum = await get("curriculum.json"); } catch { /* 커리큘럼 파일이 없으면 공부한 개념만 */ }
+  const studied = new Map();  // 이름 → 공부한 날짜들
   for (const date of [...site.dates].reverse()) {
     for (const c of site.history[date].concepts) {
-      const e = byName.get(c.name) || { name: c.name, subject: c.subject, dates: [] };
+      const e = studied.get(c.name) || { name: c.name, subject: c.subject, dates: [] };
       e.dates.push(date);
-      byName.set(c.name, e);
+      studied.set(c.name, e);
     }
   }
-  const all = [...byName.values()].sort((a, b) => b.dates.at(-1).localeCompare(a.dates.at(-1)));
-  const subjects = ["전체", ...new Set(all.map(c => c.subject))];
+  // 커리큘럼은 start_date부터 하루에 하나씩 돈다. 이번 바퀴에서 각 개념의 날짜를 구한다
+  const today = fmt(new Date());
+  const n = curriculum.length;
+  const dayNo = site.start_date ? Math.round((parseDate(today) - parseDate(site.start_date)) / 864e5) : 0;
+  const cycleStart = n ? dayNo - (((dayNo % n) + n) % n) : 0;
+  const items = curriculum.map((c, i) => ({ ...c, date: site.start_date ? addDays(site.start_date, cycleStart + i) : "", seen: studied.get(c.name) }));
+  const inCurriculum = new Set(curriculum.map(c => c.name));
+  const extra = [...studied.values()].filter(c => !inCurriculum.has(c.name)).sort((a, b) => b.dates.at(-1).localeCompare(a.dates.at(-1)));
+
+  const subjects = ["전체", ...new Set([...items.map(c => c.subject), ...extra.map(c => c.subject)])];
   let subject = "전체";
   const input = h("input", { class: "search", type: "search", placeholder: "개념 찾기", "aria-label": "개념 찾기" });
   const filters = h("div", { class: "filters", role: "group", "aria-label": "과목" });
-  const grid = h("div", { class: "concept-grid" });
+  const body = h("div");
+  const short = d => d.slice(5).replace("-", "/");
+  const notes = new Set(site.notes);
+
+  function roadmapItem(c) {
+    // 기록에 나온 날(다룸)과 그날 노트를 쓴 날(공부함)을 구분한다
+    const isToday = c.date === today;
+    const noted = c.seen?.dates.filter(d => notes.has(d)) || [];
+    const state = noted.length ? "done" : isToday ? "today" : c.seen ? "covered" : c.date > today ? "next" : "missed";
+    const label = noted.length ? `✓ ${short(noted.at(-1))} 노트`
+      : isToday ? "오늘" : c.seen ? `${short(c.seen.dates.at(-1))} · 노트 없음` : c.date > today ? `${short(c.date)} 예정` : "지나감";
+    return h("details", { class: `card croad ${state}` },
+      h("summary", {}, h("span", { class: "dot", "aria-hidden": "true" }), h("span", { class: "cname" }, c.name), h("span", { class: "cstate" }, label)),
+      h("div", { class: "cbody" },
+        h("ul", {}, c.points.map(pt => h("li", {}, pt))),
+        h("div", { class: "ask" }, h("b", {}, "💬 면접 질문"), c.question),
+        h("details", { class: "cquiz" }, h("summary", {}, `🧠 ${c.quiz.question}`), h("p", {}, h("b", {}, c.quiz.answer), ` — ${c.quiz.why}`)),
+        c.seen && h("a", { href: `#/day/${c.seen.dates.at(-1)}`, class: "clink" }, "공부한 날 기록 보기 →")));
+  }
+
   function draw() {
     const q = input.value.trim().toLowerCase();
+    const match = c => (subject === "전체" || c.subject === subject) && (!q || c.name.toLowerCase().includes(q));
     filters.replaceChildren(...subjects.map(s => h("button", {
       type: "button", class: s === subject ? "on" : "", "aria-pressed": String(s === subject),
       onclick: () => { subject = s; draw(); } }, s)));
-    const shown = all.filter(c => (subject === "전체" || c.subject === subject) && (!q || c.name.toLowerCase().includes(q)));
-    grid.replaceChildren(...(shown.length ? shown.map(c => h("a", { class: "card ctile", href: `#/day/${c.dates.at(-1)}` },
-      h("span", { class: "chip", style: "align-self:flex-start" }, c.subject),
-      h("b", {}, c.name),
-      h("div", { class: "foot" }, h("span", {}, c.dates.at(-1)), c.dates.length > 1 ? h("span", { class: "chip green" }, `${c.dates.length}번 공부`) : null)))
-      : [h("div", { class: "card notice", style: "grid-column:1/-1" }, "찾는 개념이 없습니다.")]));
+    const groups = new Map();
+    for (const c of items.filter(match)) {
+      if (!groups.has(c.subject)) groups.set(c.subject, []);
+      groups.get(c.subject).push(c);
+    }
+    const news = extra.filter(match);
+    body.replaceChildren(
+      ...[...groups].map(([subj, list]) => {
+        const all = items.filter(c => c.subject === subj);
+        const done = all.filter(c => c.seen?.dates.some(d => notes.has(d))).length;
+        return h("section", { class: "rgroup" },
+          h("div", { class: "rhead" }, h("b", {}, subj), h("span", { class: "muted" }, `${done}/${all.length}`),
+            h("span", { class: "bar" }, h("i", { style: `width:${all.length ? (done / all.length) * 100 : 0}%` }))),
+          h("div", { class: "rlist" }, list.map(roadmapItem)));
+      }),
+      news.length ? h("section", { class: "rgroup" },
+        h("div", { class: "rhead" }, h("b", {}, "📰 뉴스에서 공부한 개념"), h("span", { class: "muted" }, `${news.length}개`)),
+        h("div", { class: "concept-grid" }, news.map(c => h("a", { class: "card ctile", href: `#/day/${c.dates.at(-1)}` },
+          h("span", { class: "chip", style: "align-self:flex-start" }, c.subject), h("b", {}, c.name),
+          h("div", { class: "foot" }, h("span", {}, c.dates.at(-1)), c.dates.length > 1 ? h("span", { class: "chip green" }, `${c.dates.length}번 공부`) : null))))) : null,
+      !groups.size && !news.length ? h("div", { class: "card notice" }, "찾는 개념이 없습니다.") : null);
   }
   input.addEventListener("input", draw);
   draw();
+
+  const coveredCount = items.filter(c => c.seen).length;
+  const doneCount = items.filter(c => c.seen?.dates.some(d => site.notes.includes(d))).length;
   const graph = h("details", { class: "card graph-box" },
     h("summary", {}, "개념 연결 그래프", h("span", { class: "muted", style: "font-weight:500;font-size:13.5px" },
       h("span", { class: "when-closed" }, "펼쳐 보기"), h("span", { class: "when-open" }, "접기"))));
@@ -704,8 +781,13 @@ function conceptsView() {
     await mermaid.run({ nodes: [box] });
   });
   return [
-    h("div", { class: "page-head" }, h("h1", {}, "개념"), h("p", {}, `지금까지 공부한 개념 ${all.length}개`)),
-    h("div", { class: "toolbar" }, input), filters, h("div", { style: "height:14px" }), grid, graph];
+    h("div", { class: "page-head" }, h("h1", {}, "개념"),
+      h("p", {}, n ? `CS 커리큘럼 ${coveredCount}/${n} 진행 · 노트로 정리 ${doneCount}개 · 뉴스에서 ${extra.length}개` : `지금까지 공부한 개념 ${studied.size}개`)),
+    n ? h("div", { class: "card overall" }, h("span", { class: "bar big" },
+        h("i", { style: `width:${(doneCount / n) * 100}%` }),
+        h("i", { class: "covered", style: `width:${((coveredCount - doneCount) / n) * 100}%` })),
+      h("span", { class: "muted" }, `하루 하나씩 ${n}일이면 한 바퀴. 진한 초록은 노트로 정리한 개념, 연한 초록은 다뤘지만 노트가 없는 개념입니다.`)) : null,
+    h("div", { class: "toolbar" }, input), filters, body, site.graph ? graph : null];
 }
 
 /* ---------- 주간 ---------- */

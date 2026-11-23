@@ -267,15 +267,15 @@
   .ctile b { font-size: 15.5px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.4; }
   .ctile .foot { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--muted); margin-top: auto; }
   .overall { padding: 16px 20px; display: grid; gap: 10px; margin-bottom: 16px; font-size: 13.5px; }
-  .bar { display: inline-block; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; flex: 1; min-width: 60px; }
-  .bar.big { height: 10px; width: 100%; }
-  .bar { display: inline-flex; }
-  .bar i { display: block; height: 100%; background: var(--accent); }
-  .bar i.covered { background: var(--heat-1); }
+  .progress { display: inline-block; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; flex: 1; min-width: 60px; }
+  .progress.big { height: 10px; width: 100%; }
+  .progress { display: inline-flex; }
+  .progress i { display: block; height: 100%; background: var(--accent); }
+  .progress i.covered { background: var(--heat-1); }
   .rgroup { margin-top: 26px; }
   .rhead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14.5px; }
   .rhead .muted { font-size: 13px; font-variant-numeric: tabular-nums; }
-  .rhead .bar { max-width: 180px; }
+  .rhead .progress { max-width: 180px; }
   .rlist { display: grid; gap: 8px; }
   .croad > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 13px 16px; }
   .croad > summary::-webkit-details-marker { display: none; }
@@ -753,7 +753,7 @@ async function conceptsView() {
         const done = all.filter(c => c.seen?.dates.some(d => notes.has(d))).length;
         return h("section", { class: "rgroup" },
           h("div", { class: "rhead" }, h("b", {}, subj), h("span", { class: "muted" }, `${done}/${all.length}`),
-            h("span", { class: "bar" }, h("i", { style: `width:${all.length ? (done / all.length) * 100 : 0}%` }))),
+            h("span", { class: "progress" }, h("i", { style: `width:${all.length ? (done / all.length) * 100 : 0}%` }))),
           h("div", { class: "rlist" }, list.map(roadmapItem)));
       }),
       news.length ? h("section", { class: "rgroup" },
@@ -783,7 +783,7 @@ async function conceptsView() {
   return [
     h("div", { class: "page-head" }, h("h1", {}, "개념"),
       h("p", {}, n ? `CS 커리큘럼 ${coveredCount}/${n} 진행 · 노트로 정리 ${doneCount}개 · 뉴스에서 ${extra.length}개` : `지금까지 공부한 개념 ${studied.size}개`)),
-    n ? h("div", { class: "card overall" }, h("span", { class: "bar big" },
+    n ? h("div", { class: "card overall" }, h("span", { class: "progress big" },
         h("i", { style: `width:${(doneCount / n) * 100}%` }),
         h("i", { class: "covered", style: `width:${((coveredCount - doneCount) / n) * 100}%` })),
       h("span", { class: "muted" }, `하루 하나씩 ${n}일이면 한 바퀴. 진한 초록은 노트로 정리한 개념, 연한 초록은 다뤘지만 노트가 없는 개념입니다.`)) : null,

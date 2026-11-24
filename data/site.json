@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-24",
+  "updated": "2026-11-25",
   "start_date": "2026-11-20",
   "repo": "Jirunu/TodayToDo",
   "field": "backend",
@@ -7,7 +7,7 @@
     "streak": 0,
     "notes": 0,
     "solved": 0,
-    "concepts": 4
+    "concepts": 5
   },
   "notes": [],
   "solved": [],
@@ -15,6 +15,21 @@
     "2026-W47"
   ],
   "history": {
+    "2026-11-25": {
+      "concepts": [
+        {
+          "name": "B-Tree와 B+Tree",
+          "subject": "자료구조"
+        }
+      ],
+      "problem": {
+        "id": 22856,
+        "title": "트리 순회",
+        "tag": "trees",
+        "reason": "linked",
+        "level": 12
+      }
+    },
     "2026-11-24": {
       "concepts": [
         {
@@ -76,5 +91,5 @@
       }
     }
   },
-  "graph": "graph LR\n  subgraph s0 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n    n1[\"해시 테이블과 충돌 해결\"]\n    n2[\"힙과 우선순위 큐\"]\n    n3[\"이진 탐색 트리와 균형 트리\"]\n  end"
+  "graph": "graph LR\n  subgraph s0 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n    n1[\"해시 테이블과 충돌 해결\"]\n    n2[\"힙과 우선순위 큐\"]\n    n3[\"이진 탐색 트리와 균형 트리\"]\n    n4[\"B-Tree와 B+Tree\"]\n  end"
 }

@@ -70,5 +70,23 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-25": {
+    "concepts": [
+      {
+        "name": "B-Tree와 B+Tree",
+        "subject": "자료구조",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 22856,
+      "title": "트리 순회",
+      "tag": "trees",
+      "reason": "linked",
+      "level": 12
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

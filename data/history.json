@@ -88,5 +88,23 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-26": {
+    "concepts": [
+      {
+        "name": "트라이",
+        "subject": "자료구조",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 14426,
+      "title": "접두사 찾기",
+      "tag": "trie",
+      "reason": "linked",
+      "level": 10
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

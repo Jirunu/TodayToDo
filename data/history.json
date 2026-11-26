@@ -106,5 +106,23 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-27": {
+    "concepts": [
+      {
+        "name": "시간 복잡도와 Big-O",
+        "subject": "알고리즘",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 2608,
+      "title": "로마 숫자",
+      "tag": "math",
+      "reason": "linked",
+      "level": 11
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

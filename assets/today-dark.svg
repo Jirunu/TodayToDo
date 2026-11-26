@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="495" height="160" viewBox="0 0 495 160" font-family="-apple-system,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif">
   <rect x="0.5" y="0.5" width="494" height="159" rx="10" fill="#0d1117" stroke="#30363d"/>
   <text x="24" y="34" font-size="13" font-weight="700" fill="#3fb950">TodayToDo</text>
-  <text x="471" y="34" font-size="12" fill="#8b949e" text-anchor="end">2026-11-26</text>
-  <text x="24" y="66" font-size="11" fill="#8b949e">오늘의 CS · 자료구조</text>
-  <text x="24" y="86" font-size="16" font-weight="700" fill="#e6edf3">트라이</text>
+  <text x="471" y="34" font-size="12" fill="#8b949e" text-anchor="end">2026-11-27</text>
+  <text x="24" y="66" font-size="11" fill="#8b949e">오늘의 CS · 알고리즘</text>
+  <text x="24" y="86" font-size="16" font-weight="700" fill="#e6edf3">시간 복잡도와 Big-O</text>
   <text x="24" y="114" font-size="11" fill="#8b949e">오늘의 문제</text>
-  <text x="24" y="133" font-size="14" font-weight="600" fill="#e6edf3">BOJ 14426 접두사 찾기  ·  Silver I</text>
+  <text x="24" y="133" font-size="14" font-weight="600" fill="#e6edf3">BOJ 2608 로마 숫자  ·  Gold V</text>
   <text x="471" y="133" font-size="12" fill="#8b949e" text-anchor="end">연속 공부 0일 · 노트 0개</text>
 </svg>

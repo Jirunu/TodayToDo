@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-27",
+  "streak": 0,
+  "concepts": [
+    {
+      "name": "시간 복잡도와 Big-O",
+      "subject": "알고리즘",
+      "from_news": false,
+      "explanation": [
+        "입력 크기 n이 커질 때 연산 횟수가 늘어나는 정도를 상수를 빼고 표현한다",
+        "O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ) 순으로 느려진다",
+        "코딩테스트에서는 대략 1초에 1억 번 연산을 기준으로 가능한 복잡도를 가늠한다"
+      ],
+      "interview_question": "n이 10만일 때 O(n²) 알고리즘을 쓰면 안 되는 이유는?",
+      "news": null
+    }
+  ],
+  "quiz": [
+    {
+      "question": "정렬된 배열에서 이분 탐색의 시간 복잡도는?",
+      "answer": "O(log n)",
+      "why": "매번 탐색 범위가 절반으로 준다"
+    }
+  ],
+  "reviews": [
+    {
+      "offset": 1,
+      "date": "2026-11-26",
+      "names": [
+        "트라이"
+      ]
+    }
+  ],
+  "problem": {
+    "id": 2608,
+    "title": "로마 숫자",
+    "tag": "math",
+    "reason": "linked",
+    "level": 11
+  },
+  "pending": [
+    {
+      "date": "2026-11-21",
+      "problem": {
+        "id": 2257,
+        "title": "화학식량",
+        "tag": "stack",
+        "reason": "linked",
+        "level": 10
+      }
+    },
+    {
+      "date": "2026-11-22",
+      "problem": {
+        "id": 14171,
+        "title": "Cities and States",
+        "tag": "hashing",
+        "reason": "linked",
+        "level": 11
+      }
+    },
+    {
+      "date": "2026-11-23",
+      "problem": {
+        "id": 23843,
+        "title": "콘센트",
+        "tag": "priority_queue",
+        "reason": "linked",
+        "level": 11
+      }
+    },
+    {
+      "date": "2026-11-24",
+      "problem": {
+        "id": 21939,
+        "title": "문제 추천 시스템 Version 1",
+        "tag": "tree_set",
+        "reason": "linked",
+        "level": 12
+      }
+    },
+    {
+      "date": "2026-11-25",
+      "problem": {
+        "id": 22856,
+        "title": "트리 순회",
+        "tag": "trees",
+        "reason": "linked",
+        "level": 12
+      }
+    },
+    {
+      "date": "2026-11-26",
+      "problem": {
+        "id": 14426,
+        "title": "접두사 찾기",
+        "tag": "trie",
+        "reason": "linked",
+        "level": 10
+      }
+    }
+  ],
+  "news": [
+    {
+      "title": "재미로 AWS Lambda에서 Qwen 서빙하기, 비용은 80배 넘게",
+      "link": "https://news.hada.io/topic?id=37914",
+      "source": "GeekNews",
+      "one_line": "자체 호스팅 모델의 추론을 5,600개의 AWS Lambda 로 분산하는 실험에 성공했지만, 비교 대상인 호스팅 모델보다 비용이 80배 이상 높았음 실험에는 Qwen3.5-4B를 미세 조정한 H2O-Lightning"
+    },
+    {
+      "title": "AMD Specific Patches for Llama.cpp",
+      "link": "https://devnull.land/amd-specific-llama-cpp",
+      "source": "Hacker News",
+      "one_line": "Hacker News 190점 · 댓글 50개"
+    },
+    {
+      "title": "CIA 비기밀 시스템, 사이버공격으로 침해당해",
+      "link": "https://news.hada.io/topic?id=37913",
+      "source": "GeekNews",
+      "one_line": "사건을 아는 익명 소식통에 따르면 CIA의 공개출처정보 수집/분석 시스템 이 사이버공격으로 침해당함 같은 소식통은 기밀정보는 관련되지 않았으며 , 해당 문제는 해결됐다고 밝힘 침해된 구체적인 정보와 공격 주체 는 확"
+    },
+    {
+      "title": "CTO of 'RansomwareHelp' Indicted for Wire Fraud",
+      "link": "https://krebsonsecurity.com/2026/11/cto-of-ransomwarehelp-indicted-for-wire-fraud/",
+      "source": "Hacker News",
+      "one_line": "Hacker News 131점 · 댓글 55개"
+    },
+    {
+      "title": "Euro-Office, Nextcloud Office Desktop 앱으로 데스크톱에 진출",
+      "link": "https://news.hada.io/topic?id=37902",
+      "source": "GeekNews",
+      "one_line": "Euro-Office 기반 Nextcloud Office Desktop 앱 이 다운로드 가능한 버전으로 공개됨. Windows, macOS, Linux에서 무료 오픈소스 오피스를 사용할 수 있음 문서, 스프레드시트,"
+    }
+  ],
+  "mode": "basic"
+}

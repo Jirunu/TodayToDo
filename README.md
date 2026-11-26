@@ -23,9 +23,9 @@
 ## 오늘
 
 <!-- TODAY:START -->
-**오늘 (2026-11-26)** → [daily/2026-11-26.md](daily/2026-11-26.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
+**오늘 (2026-11-27)** → [daily/2026-11-27.md](daily/2026-11-27.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
 
-- [BOJ 14426 접두사 찾기](https://www.acmicpc.net/problem/14426) Silver I `#trie` (오늘 개념과 연결)
+- [BOJ 2608 로마 숫자](https://www.acmicpc.net/problem/2608) Gold V `#math` (오늘 개념과 연결)
 
 🔥 연속 0일 · 📝 누적 노트 0개
 

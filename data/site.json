@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "start_date": "2026-11-20",
   "repo": "Jirunu/TodayToDo",
   "field": "backend",
@@ -7,7 +7,7 @@
     "streak": 0,
     "notes": 0,
     "solved": 0,
-    "concepts": 6
+    "concepts": 7
   },
   "notes": [],
   "solved": [],
@@ -15,6 +15,21 @@
     "2026-W47"
   ],
   "history": {
+    "2026-11-27": {
+      "concepts": [
+        {
+          "name": "시간 복잡도와 Big-O",
+          "subject": "알고리즘"
+        }
+      ],
+      "problem": {
+        "id": 2608,
+        "title": "로마 숫자",
+        "tag": "math",
+        "reason": "linked",
+        "level": 11
+      }
+    },
     "2026-11-26": {
       "concepts": [
         {
@@ -106,5 +121,5 @@
       }
     }
   },
-  "graph": "graph LR\n  subgraph s0 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n    n1[\"해시 테이블과 충돌 해결\"]\n    n2[\"힙과 우선순위 큐\"]\n    n3[\"이진 탐색 트리와 균형 트리\"]\n    n4[\"B-Tree와 B+Tree\"]\n    n5[\"트라이\"]\n  end"
+  "graph": "graph LR\n  subgraph s0 [\"알고리즘\"]\n    n6[\"시간 복잡도와 Big-O\"]\n  end\n  subgraph s1 [\"자료구조\"]\n    n0[\"스택과 큐\"]\n    n1[\"해시 테이블과 충돌 해결\"]\n    n2[\"힙과 우선순위 큐\"]\n    n3[\"이진 탐색 트리와 균형 트리\"]\n    n4[\"B-Tree와 B+Tree\"]\n    n5[\"트라이\"]\n  end"
 }

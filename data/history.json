@@ -124,5 +124,23 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-28": {
+    "concepts": [
+      {
+        "name": "정렬 알고리즘 비교",
+        "subject": "알고리즘",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 20207,
+      "title": "달력",
+      "tag": "sorting",
+      "reason": "linked",
+      "level": 11
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

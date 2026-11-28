@@ -142,5 +142,23 @@
     },
     "keywords_added": [],
     "usage": {}
+  },
+  "2026-11-29": {
+    "concepts": [
+      {
+        "name": "이분 탐색",
+        "subject": "알고리즘",
+        "related": []
+      }
+    ],
+    "problem": {
+      "id": 1654,
+      "title": "랜선 자르기",
+      "tag": "binary_search",
+      "reason": "linked",
+      "level": 9
+    },
+    "keywords_added": [],
+    "usage": {}
   }
 }

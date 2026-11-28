@@ -23,9 +23,9 @@
 ## 오늘
 
 <!-- TODAY:START -->
-**오늘 (2026-11-28)** → [daily/2026-11-28.md](daily/2026-11-28.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
+**오늘 (2026-11-29)** → [daily/2026-11-29.md](daily/2026-11-29.md) · [개념 아카이브](concepts.md) · [주간 리포트](weekly/)
 
-- [BOJ 20207 달력](https://www.acmicpc.net/problem/20207) Gold V `#sorting` (오늘 개념과 연결)
+- [BOJ 1654 랜선 자르기](https://www.acmicpc.net/problem/1654) Silver II `#binary_search` (오늘 개념과 연결)
 
 🔥 연속 0일 · 📝 누적 노트 0개
 

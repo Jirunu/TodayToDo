@@ -1,0 +1,163 @@
+{
+  "date": "2026-11-29",
+  "streak": 0,
+  "concepts": [
+    {
+      "name": "이분 탐색",
+      "subject": "알고리즘",
+      "from_news": false,
+      "explanation": [
+        "정렬된 범위의 가운데를 보고 절반을 버리는 방식으로 O(log n)에 찾는다",
+        "\"조건을 만족하는 최솟값\"처럼 답을 직접 찾는 파라메트릭 서치에도 쓴다",
+        "lower_bound/upper_bound와 경계(<, <=) 처리를 정확히 하는 것이 핵심이다"
+      ],
+      "interview_question": "파라메트릭 서치가 무엇이고 언제 쓰나요?",
+      "news": null
+    }
+  ],
+  "quiz": [
+    {
+      "question": "O/X: 이분 탐색은 정렬되지 않은 배열에서도 쓸 수 있다",
+      "answer": "X",
+      "why": "가운데 값으로 어느 쪽을 버릴지 판단하려면 정렬이 필요"
+    }
+  ],
+  "reviews": [
+    {
+      "offset": 1,
+      "date": "2026-11-28",
+      "names": [
+        "정렬 알고리즘 비교"
+      ]
+    },
+    {
+      "offset": 7,
+      "date": "2026-11-22",
+      "names": [
+        "해시 테이블과 충돌 해결"
+      ]
+    }
+  ],
+  "problem": {
+    "id": 1654,
+    "title": "랜선 자르기",
+    "tag": "binary_search",
+    "reason": "linked",
+    "level": 9
+  },
+  "pending": [
+    {
+      "date": "2026-11-21",
+      "problem": {
+        "id": 2257,
+        "title": "화학식량",
+        "tag": "stack",
+        "reason": "linked",
+        "level": 10
+      }
+    },
+    {
+      "date": "2026-11-22",
+      "problem": {
+        "id": 14171,
+        "title": "Cities and States",
+        "tag": "hashing",
+        "reason": "linked",
+        "level": 11
+      }
+    },
+    {
+      "date": "2026-11-23",
+      "problem": {
+        "id": 23843,
+        "title": "콘센트",
+        "tag": "priority_queue",
+        "reason": "linked",
+        "level": 11
+      }
+    },
+    {
+      "date": "2026-11-24",
+      "problem": {
+        "id": 21939,
+        "title": "문제 추천 시스템 Version 1",
+        "tag": "tree_set",
+        "reason": "linked",
+        "level": 12
+      }
+    },
+    {
+      "date": "2026-11-25",
+      "problem": {
+        "id": 22856,
+        "title": "트리 순회",
+        "tag": "trees",
+        "reason": "linked",
+        "level": 12
+      }
+    },
+    {
+      "date": "2026-11-26",
+      "problem": {
+        "id": 14426,
+        "title": "접두사 찾기",
+        "tag": "trie",
+        "reason": "linked",
+        "level": 10
+      }
+    },
+    {
+      "date": "2026-11-27",
+      "problem": {
+        "id": 2608,
+        "title": "로마 숫자",
+        "tag": "math",
+        "reason": "linked",
+        "level": 11
+      }
+    },
+    {
+      "date": "2026-11-28",
+      "problem": {
+        "id": 20207,
+        "title": "달력",
+        "tag": "sorting",
+        "reason": "linked",
+        "level": 11
+      }
+    }
+  ],
+  "news": [
+    {
+      "title": "모델의 능력을 몰래 떨어뜨리는 것은 사보타주다",
+      "link": "https://news.hada.io/topic?id=38012",
+      "source": "GeekNews",
+      "one_line": "자사 업무와 경쟁하는 개발자 작업에서 모델의 능력을 몰래 떨어뜨리는 행위 는 사보타주에 해당함 비판의 대상은 능력 저하 자체가 아니라, 자사와 경쟁하는 작업을 겨냥한 은밀한 성능 저하 임 이런 행위는 단순히 부적절한"
+    },
+    {
+      "title": "Tabernetes: A Kubernetes cluster whose nodes are browser tabs",
+      "link": "https://tabernet.es/",
+      "source": "Hacker News",
+      "one_line": "Hacker News 209점 · 댓글 64개"
+    },
+    {
+      "title": "Audible, 구매한 오디오북 다운로드 옵션 제거",
+      "link": "https://news.hada.io/topic?id=38008",
+      "source": "GeekNews",
+      "one_line": "Audible 미국 웹사이트 에서 신용카드나 Audible 크레딧으로 구매한 오디오북을 컴퓨터 파일로 직접 다운로드하는 기능이 사라짐 웹에서는 인터넷 연결이 필요한 Cloud Player 로 청취할 수 있으며, 기존"
+    },
+    {
+      "title": "Donald Knuth suspends error bounties due to an influx of AI-generated reports",
+      "link": "https://cs.stanford.edu/~knuth/moratorium.html",
+      "source": "Hacker News",
+      "one_line": "Hacker News 248점 · 댓글 41개"
+    },
+    {
+      "title": "Tabernetes: 브라우저 탭을 노드로 사용하는 Kubernetes 클러스터",
+      "link": "https://news.hada.io/topic?id=37996",
+      "source": "GeekNews",
+      "one_line": "Tabernetes 는 브라우저 탭을 Kubernetes 노드로 등록하고, 탭 안에서 부팅한 Linux 커널로 스케줄러가 배정한 파드의 프로그램을 실행함 클러스터 참여 시 약 5MB 를 다운로드하며, 탭을 닫을 때까"
+    }
+  ],
+  "mode": "basic"
+}
